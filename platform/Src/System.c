@@ -126,3 +126,9 @@ static void System_InitPeriphClkSources(void)
 	RCC->CCIPR &= ~(RCC_CCIPR_USART2SEL_Msk);
 	RCC->CCIPR |= RCC_CCIPR_USART2SEL_0;
 }
+
+void system_sleep(void)
+{
+    __WFI();
+    return;
+}

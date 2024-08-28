@@ -9,8 +9,8 @@ set(INCLUDE_DIRS
 set(C_SRCS
 
 #------------PLATFORM RELATED SOURCE FILES ----------------------------------------------------------
-	platform/Src/system_stm32wlxx.c
 	platform/Src/System.c
+	platform/Src/debug.c
 
 
 #------------EXTERNAL LIBS RELATED SOURCE FILES ----------------------------------------------------

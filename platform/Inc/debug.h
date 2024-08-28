@@ -2,10 +2,6 @@
 #define PLATFORM_DEBUG_H_
 
 #include "main.h"
-/**
- * @brief Initializes all stuff related with microcontroller debugging - ONLY RELEVANT WHILE DEVELOPMENT
-*/
-void Debug_STM32_Init(void);
 
 /**
  * @brief Initializes debug pin

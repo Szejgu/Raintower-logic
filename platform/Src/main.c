@@ -22,6 +22,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "System.h"
+#include "debug.h"
 
 /* USER CODE END Includes */
 
@@ -71,7 +72,7 @@ int main(void)
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
 
   /* USER CODE BEGIN Init */
-
+  initDebugPin();
   /* USER CODE END Init */
 
   /* Configure the system clock */
@@ -83,7 +84,7 @@ int main(void)
   /* Initialize all configured peripherals */
 
   /* USER CODE BEGIN 2 */
-
+  DebugPinBlink();
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -91,11 +92,11 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+    
     /* USER CODE BEGIN 3 */
 
     //tu sleep2
-    //__WFI();
+    system_sleep();
 
   }
   /* USER CODE END 3 */

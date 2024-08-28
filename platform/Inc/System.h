@@ -3,4 +3,6 @@
 
 void System_init(void);
 
+void system_sleep(void);
+
 #endif
