@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+#include "TS_TimeStruct_t.h"
 
 typedef enum{
 
@@ -12,18 +13,6 @@ typedef enum{
     TS_Priority_high = 0x02
 
 }TaskPriority_t;
-
-typedef struct{
-
-    uint32_t year;
-    uint32_t month;
-    uint32_t day;
-    uint32_t hour;
-    uint32_t minute;
-    uint32_t second;
-    uint32_t milisecond;
-
-}TS_TimeStruct;
 
 #define TASK_LIMIT_STRUCT { \
     .year = 0, \
@@ -38,10 +27,10 @@ typedef struct{
 typedef struct{
 
     void (*TaskFunPtr)(void);
-    TS_TimeStruct (*PlanNextInst)(void);
+    TS_TimeStruct_t (*PlanNextInst)(void);
     TaskPriority_t Priority;
-    TS_TimeStruct MaximumExecTime;
-    TS_TimeStruct* TimeToNextInst;
+    TS_TimeStruct_t MaximumExecTime;
+    TS_TimeStruct_t* TimeToNextInst;
 
 }TaskDescriptor_t;
 
@@ -52,12 +41,12 @@ typedef struct{
     TaskDescriptor_t* TaskListTab;
     size_t TaskListTab_size;
     
-    void (*updateCurrentTimeFromHW)(TS_TimeStruct* input);
-    bool (*setCurrentTimeInHW)(const TS_TimeStruct* input);
+    void (*updateCurrentTimeFromHW)(TS_TimeStruct_t* input);
+    bool (*setCurrentTimeInHW)(const TS_TimeStruct_t* input);
 
-    bool (*setNextWakeup)(const TS_TimeStruct* input);
+    bool (*setNextWakeup)(const TS_TimeStruct_t* input);
 
-    bool (*setOrRestartTaskBreaker)(const TS_TimeStruct* input);
+    bool (*setOrRestartTaskBreaker)(const TS_TimeStruct_t* input);
     bool (*resetTaskBreaker)(void);
 
 }TS_InitStruct_t;
@@ -95,7 +84,7 @@ void TS_Run(void);
  * @remark Any other time struct given as a result of Plan Next is a relative representation of next occurence
  * @remark with this function it's possible to plan for specific minute/day/hour rather than planning after a given ammount of time
  */
-TS_TimeStruct TS_PlanAbsolute(TS_TimeStruct date);
+TS_TimeStruct_t TS_PlanAbsolute(TS_TimeStruct_t date);
 
 /**
  * @brief This function is for use for other modules to signify the task execution time has been exceeded

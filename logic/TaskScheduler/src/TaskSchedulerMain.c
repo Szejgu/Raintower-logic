@@ -15,7 +15,7 @@ void TS_Run(void)
 
 }
 
-TS_TimeStruct TS_PlanAbsolute(TS_TimeStruct date)
+TS_TimeStruct_t TS_PlanAbsolute(TS_TimeStruct_t date)
 {
 
 }

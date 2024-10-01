@@ -3,6 +3,7 @@
 #include "unity.h"
 
 #include "TaskSchedulerMain.h"
+#include "TS_TimeStruct_t.h"
 
 #define TASK_LIST_LENGTH 3
 #define DUMMY_TASK_MAX_EXEC_TIME { \
@@ -26,9 +27,9 @@
 }
 
 static void dummy_fun(void);
-static TS_TimeStruct dummy_planNext(void);
-static void v_dummy_TS_TimeStruct(TS_TimeStruct* input);
-static bool b_dummy_const_TS_TimeStruct(const TS_TimeStruct* input);
+static TS_TimeStruct_t dummy_planNext(void);
+static void v_dummy_TS_TimeStruct_t(TS_TimeStruct_t* input);
+static bool b_dummy_const_TS_TimeStruct_t(const TS_TimeStruct_t* input);
 static bool b_dummy_v(void);
 
 void setUp(void)
@@ -90,7 +91,7 @@ void test_TaskScheduler_Init_TaskList_Integrity_error_maximumExecTimeZero(void)
 {
     //ARRANGE
     TS_InitStruct_t input = {0};
-    TS_TimeStruct currTimeTabInst[TASK_LIST_LENGTH] = {0};
+    TS_TimeStruct_t currTimeTabInst[TASK_LIST_LENGTH] = {0};
 
     TaskDescriptor_t TaskList[TASK_LIST_LENGTH] = {
         {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &currTimeTabInst[0]},
@@ -111,9 +112,9 @@ void test_TaskScheduler_Init_TaskList_Integrity_error_maximumExecTooHigh(void)
 {
     //ARRANGE
     TS_InitStruct_t input = {0};
-    TS_TimeStruct currTimeTabInst[TASK_LIST_LENGTH] = {0};
+    TS_TimeStruct_t currTimeTabInst[TASK_LIST_LENGTH] = {0};
 
-    TS_TimeStruct MaxTaskTime = TASK_LIMIT_STRUCT;
+    TS_TimeStruct_t MaxTaskTime = TASK_LIMIT_STRUCT;
     MaxTaskTime.year += 1;
 
     TaskDescriptor_t TaskList[TASK_LIST_LENGTH] = {
@@ -135,7 +136,7 @@ void test_TaskScheduler_Init_updateCurrentTimeFromHW_NULL(void)
 {
     //ARRANGE
     TS_InitStruct_t input = {0};
-    TS_TimeStruct currTimeTabInst[TASK_LIST_LENGTH] = {0};
+    TS_TimeStruct_t currTimeTabInst[TASK_LIST_LENGTH] = {0};
 
     TaskDescriptor_t TaskList[TASK_LIST_LENGTH] = {
         {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &currTimeTabInst[0]},
@@ -156,7 +157,7 @@ void test_TaskScheduler_Init_setCurrentTimeInHW_NULL(void)
 {
     //ARRANGE
     TS_InitStruct_t input = {0};
-    TS_TimeStruct currTimeTabInst[TASK_LIST_LENGTH] = {0};
+    TS_TimeStruct_t currTimeTabInst[TASK_LIST_LENGTH] = {0};
 
     TaskDescriptor_t TaskList[TASK_LIST_LENGTH] = {
         {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &currTimeTabInst[0]},
@@ -165,7 +166,7 @@ void test_TaskScheduler_Init_setCurrentTimeInHW_NULL(void)
     };
     input.TaskListTab = TaskList;
     input.TaskListTab_size = TASK_LIST_LENGTH;
-    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct;
+    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct_t;
 
     //ACT
     TS_InitErrorCodes_t result = TS_Init(&input);
@@ -178,7 +179,7 @@ void test_TaskScheduler_Init_setNextWakeup_NULL(void)
 {
     //ARRANGE
     TS_InitStruct_t input = {0};
-    TS_TimeStruct currTimeTabInst[TASK_LIST_LENGTH] = {0};
+    TS_TimeStruct_t currTimeTabInst[TASK_LIST_LENGTH] = {0};
 
     TaskDescriptor_t TaskList[TASK_LIST_LENGTH] = {
         {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &currTimeTabInst[0]},
@@ -187,8 +188,8 @@ void test_TaskScheduler_Init_setNextWakeup_NULL(void)
     };
     input.TaskListTab = TaskList;
     input.TaskListTab_size = TASK_LIST_LENGTH;
-    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct;
-    input.setCurrentTimeInHW = b_dummy_const_TS_TimeStruct;
+    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct_t;
+    input.setCurrentTimeInHW = b_dummy_const_TS_TimeStruct_t;
 
     //ACT
     TS_InitErrorCodes_t result = TS_Init(&input);
@@ -201,7 +202,7 @@ void test_TaskScheduler_Init_setOrRestartTaskBreaker_NULL(void)
 {
     //ARRANGE
     TS_InitStruct_t input = {0};
-    TS_TimeStruct currTimeTabInst[TASK_LIST_LENGTH] = {0};
+    TS_TimeStruct_t currTimeTabInst[TASK_LIST_LENGTH] = {0};
 
     TaskDescriptor_t TaskList[TASK_LIST_LENGTH] = {
         {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &currTimeTabInst[0]},
@@ -210,9 +211,9 @@ void test_TaskScheduler_Init_setOrRestartTaskBreaker_NULL(void)
     };
     input.TaskListTab = TaskList;
     input.TaskListTab_size = TASK_LIST_LENGTH;
-    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct;
-    input.setCurrentTimeInHW = b_dummy_const_TS_TimeStruct;
-    input.setNextWakeup = b_dummy_const_TS_TimeStruct;
+    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct_t;
+    input.setCurrentTimeInHW = b_dummy_const_TS_TimeStruct_t;
+    input.setNextWakeup = b_dummy_const_TS_TimeStruct_t;
 
     //ACT
     TS_InitErrorCodes_t result = TS_Init(&input);
@@ -225,7 +226,7 @@ void test_TaskScheduler_Init_resetTaskBreaker_NULL(void)
 {
     //ARRANGE
     TS_InitStruct_t input = {0};
-    TS_TimeStruct currTimeTabInst[TASK_LIST_LENGTH] = {0};
+    TS_TimeStruct_t currTimeTabInst[TASK_LIST_LENGTH] = {0};
 
     TaskDescriptor_t TaskList[TASK_LIST_LENGTH] = {
         {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &currTimeTabInst[0]},
@@ -234,10 +235,10 @@ void test_TaskScheduler_Init_resetTaskBreaker_NULL(void)
     };
     input.TaskListTab = TaskList;
     input.TaskListTab_size = TASK_LIST_LENGTH;
-    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct;
-    input.setCurrentTimeInHW = b_dummy_const_TS_TimeStruct;
-    input.setNextWakeup = b_dummy_const_TS_TimeStruct;
-    input.setOrRestartTaskBreaker = b_dummy_const_TS_TimeStruct;
+    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct_t;
+    input.setCurrentTimeInHW = b_dummy_const_TS_TimeStruct_t;
+    input.setNextWakeup = b_dummy_const_TS_TimeStruct_t;
+    input.setOrRestartTaskBreaker = b_dummy_const_TS_TimeStruct_t;
 
     //ACT
     TS_InitErrorCodes_t result = TS_Init(&input);
@@ -250,7 +251,7 @@ void test_TaskScheduler_Init_happy_path(void)
 {
     //ARRANGE
     TS_InitStruct_t input = {0};
-    TS_TimeStruct currTimeTabInst[TASK_LIST_LENGTH] = {0};
+    TS_TimeStruct_t currTimeTabInst[TASK_LIST_LENGTH] = {0};
 
     TaskDescriptor_t TaskList[TASK_LIST_LENGTH] = {
         {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &currTimeTabInst[0]},
@@ -259,10 +260,10 @@ void test_TaskScheduler_Init_happy_path(void)
     };
     input.TaskListTab = TaskList;
     input.TaskListTab_size = TASK_LIST_LENGTH;
-    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct;
-    input.setCurrentTimeInHW = b_dummy_const_TS_TimeStruct;
-    input.setNextWakeup = b_dummy_const_TS_TimeStruct;
-    input.setOrRestartTaskBreaker = b_dummy_const_TS_TimeStruct;
+    input.updateCurrentTimeFromHW = v_dummy_TS_TimeStruct_t;
+    input.setCurrentTimeInHW = b_dummy_const_TS_TimeStruct_t;
+    input.setNextWakeup = b_dummy_const_TS_TimeStruct_t;
+    input.setOrRestartTaskBreaker = b_dummy_const_TS_TimeStruct_t;
     input.resetTaskBreaker = b_dummy_v;
 
     //ACT
@@ -277,18 +278,18 @@ static void dummy_fun(void)
 
 }
 
-static TS_TimeStruct dummy_planNext(void)
+static TS_TimeStruct_t dummy_planNext(void)
 {
-    TS_TimeStruct ret = {0};
+    TS_TimeStruct_t ret = {0};
     return ret;
 }
 
-static void v_dummy_TS_TimeStruct(TS_TimeStruct* input)
+static void v_dummy_TS_TimeStruct_t(TS_TimeStruct_t* input)
 {
     (void)input;
 }
 
-static bool b_dummy_const_TS_TimeStruct(const TS_TimeStruct* input)
+static bool b_dummy_const_TS_TimeStruct_t(const TS_TimeStruct_t* input)
 {
     (void)input;
     return true;
