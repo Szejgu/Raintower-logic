@@ -7,6 +7,8 @@
 #include <string.h>
 
 #define TASK_LIST_LENGTH 3
+#define TASK_ORDER_TAB_LENGTH 10
+
 #define DUMMY_TASK_MAX_EXEC_TIME { \
     .year = 0, \
     .month = 0, \
@@ -17,6 +19,15 @@
     .milisecond = 0 \
 }
 
+#define DUMMY_TASK_MAX_EXEC_TIME2 { \
+    .year = 0, \
+    .month = 0, \
+    .day = 0, \
+    .hour = 0, \
+    .minute = 0, \
+    .second = 0, \
+    .milisecond = 900 \
+}
 
 
 static void dummy_fun(void);
@@ -46,6 +57,8 @@ static TS_TimeStruct_t task1_planNextRetVal = {0};
 static TS_TimeStruct_t task2_planNextRetVal = {0};
 static TS_TimeStruct_t task3_planNextRetVal = {0};
 static TS_TimeStruct_t alarmSetValue = {0}; 
+static uint32_t TaskOrderTab[TASK_ORDER_TAB_LENGTH];
+static uint32_t TaskOrderTab_index = 0;
 
 static TS_TimeStruct_t SamplecurrTimeTabInst[TASK_LIST_LENGTH] = {0};
 TaskDescriptor_t SampleTaskList[TASK_LIST_LENGTH] = {
@@ -65,6 +78,8 @@ void setUp(void)
     memset(&task2_planNextRetVal, 0x00, sizeof(TS_TimeStruct_t));
     memset(&task3_planNextRetVal, 0x00, sizeof(TS_TimeStruct_t));
     memset(&alarmSetValue, 0x00, sizeof(TS_TimeStruct_t));
+    memset(TaskOrderTab, 0x0, TASK_ORDER_TAB_LENGTH*sizeof(uint32_t));
+    TaskOrderTab_index = 0;
 }
 
 void tearDown(void)
@@ -120,6 +135,15 @@ void test_TaskScheduler_run_single_task_next_occurence_updated_first_time(void)
     TEST_ASSERT_EQUAL(30, task1_currTimeInst.second);
     TEST_ASSERT_EQUAL(242, task1_currTimeInst.milisecond);
 
+    TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
+    TEST_ASSERT_EQUAL(2024, alarmSetValue.year);
+    TEST_ASSERT_EQUAL(9, alarmSetValue.month);
+    TEST_ASSERT_EQUAL(20, alarmSetValue.day);
+    TEST_ASSERT_EQUAL(15, alarmSetValue.hour);
+    TEST_ASSERT_EQUAL(18, alarmSetValue.minute);
+    TEST_ASSERT_EQUAL(30, alarmSetValue.second);
+    TEST_ASSERT_EQUAL(242, alarmSetValue.milisecond);
+
 }
 
 void test_TaskScheduler_run_single_task_next_occurence_updated(void)
@@ -168,6 +192,14 @@ void test_TaskScheduler_run_single_task_next_occurence_updated(void)
     TEST_ASSERT_EQUAL(18, task1_currTimeInst.minute);
     TEST_ASSERT_EQUAL(30, task1_currTimeInst.second);
     TEST_ASSERT_EQUAL(242, task1_currTimeInst.milisecond);
+
+    TEST_ASSERT_EQUAL(2024, alarmSetValue.year);
+    TEST_ASSERT_EQUAL(9, alarmSetValue.month);
+    TEST_ASSERT_EQUAL(20, alarmSetValue.day);
+    TEST_ASSERT_EQUAL(15, alarmSetValue.hour);
+    TEST_ASSERT_EQUAL(18, alarmSetValue.minute);
+    TEST_ASSERT_EQUAL(30, alarmSetValue.second);
+    TEST_ASSERT_EQUAL(242, alarmSetValue.milisecond);
 
 }
 
@@ -219,6 +251,14 @@ void test_TaskScheduler_run_single_task_triggered_and_updated(void)
     TEST_ASSERT_EQUAL(30, task1_currTimeInst.second);
     TEST_ASSERT_EQUAL(242, task1_currTimeInst.milisecond);
 
+    TEST_ASSERT_EQUAL(2024, alarmSetValue.year);
+    TEST_ASSERT_EQUAL(9, alarmSetValue.month);
+    TEST_ASSERT_EQUAL(20, alarmSetValue.day);
+    TEST_ASSERT_EQUAL(15, alarmSetValue.hour);
+    TEST_ASSERT_EQUAL(19, alarmSetValue.minute);
+    TEST_ASSERT_EQUAL(30, alarmSetValue.second);
+    TEST_ASSERT_EQUAL(242, alarmSetValue.milisecond);
+
 }
 
 void test_TaskScheduler_run_single_task_overdue(void)
@@ -248,13 +288,7 @@ void test_TaskScheduler_run_single_task_overdue(void)
     TS_InitErrorCodes_t result = TS_Init(&input);
     TS_Run();
 
-    HWTimestampRet.year = 2024;
-    HWTimestampRet.day = 20;
-    HWTimestampRet.month = 9;
-    HWTimestampRet.hour = 15;
     HWTimestampRet.minute = 25;
-    HWTimestampRet.second = 30;
-    HWTimestampRet.milisecond = 242;
 
     TS_Run();
 
@@ -269,6 +303,14 @@ void test_TaskScheduler_run_single_task_overdue(void)
     TEST_ASSERT_EQUAL(30, task1_currTimeInst.second);
     TEST_ASSERT_EQUAL(242, task1_currTimeInst.milisecond);
 
+    TEST_ASSERT_EQUAL(2024, alarmSetValue.year);
+    TEST_ASSERT_EQUAL(9, alarmSetValue.month);
+    TEST_ASSERT_EQUAL(20, alarmSetValue.day);
+    TEST_ASSERT_EQUAL(15, alarmSetValue.hour);
+    TEST_ASSERT_EQUAL(26, alarmSetValue.minute);
+    TEST_ASSERT_EQUAL(30, alarmSetValue.second);
+    TEST_ASSERT_EQUAL(242, alarmSetValue.milisecond);
+    
 }
 
 void test_TaskScheduler_run_multiple_tasks_properly_assigned(void)
@@ -335,6 +377,14 @@ void test_TaskScheduler_run_multiple_tasks_properly_assigned(void)
     TEST_ASSERT_EQUAL(30, task3_currTimeInst.second);
     TEST_ASSERT_EQUAL(242, task3_currTimeInst.milisecond);
 
+    TEST_ASSERT_EQUAL(2024, alarmSetValue.year);
+    TEST_ASSERT_EQUAL(9, alarmSetValue.month);
+    TEST_ASSERT_EQUAL(20, alarmSetValue.day);
+    TEST_ASSERT_EQUAL(15, alarmSetValue.hour);
+    TEST_ASSERT_EQUAL(18, alarmSetValue.minute);
+    TEST_ASSERT_EQUAL(0, alarmSetValue.second);
+    TEST_ASSERT_EQUAL(242, alarmSetValue.milisecond);
+
 }
 
 void test_TaskScheduler_run_multiple_tasks_triggered_and_updated(void)
@@ -370,21 +420,17 @@ void test_TaskScheduler_run_multiple_tasks_triggered_and_updated(void)
     TS_InitErrorCodes_t result = TS_Init(&input);
     TS_Run();
 
-    HWTimestampRet.year = 2024;
-    HWTimestampRet.day = 20;
-    HWTimestampRet.month = 9;
-    HWTimestampRet.hour = 15;
+
     HWTimestampRet.minute = 18;
-    HWTimestampRet.second = 30;
-    HWTimestampRet.milisecond = 242;
+    HWTimestampRet.second = 0;
 
     TS_Run();
 
     //ASSERT
     TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
     
-    TEST_ASSERT_EQUAL(1, task1_callCounter);
-    TEST_ASSERT_EQUAL(0, task2_callCounter);
+    TEST_ASSERT_EQUAL(0, task1_callCounter);
+    TEST_ASSERT_EQUAL(1, task2_callCounter);
     TEST_ASSERT_EQUAL(0, task3_callCounter);
     
     TEST_ASSERT_EQUAL(2024, task1_currTimeInst.year);
@@ -400,16 +446,24 @@ void test_TaskScheduler_run_multiple_tasks_triggered_and_updated(void)
     TEST_ASSERT_EQUAL(20, task2_currTimeInst.day);
     TEST_ASSERT_EQUAL(15, task2_currTimeInst.hour);
     TEST_ASSERT_EQUAL(18, task2_currTimeInst.minute);
-    TEST_ASSERT_EQUAL(0, task2_currTimeInst.second);
+    TEST_ASSERT_EQUAL(30, task2_currTimeInst.second);
     TEST_ASSERT_EQUAL(242, task2_currTimeInst.milisecond);
 
     TEST_ASSERT_EQUAL(2024, task3_currTimeInst.year);
     TEST_ASSERT_EQUAL(9, task3_currTimeInst.month);
     TEST_ASSERT_EQUAL(21, task3_currTimeInst.day);
     TEST_ASSERT_EQUAL(3, task3_currTimeInst.hour);
-    TEST_ASSERT_EQUAL(17, task3_currTimeInst.minute);
+    TEST_ASSERT_EQUAL(18, task3_currTimeInst.minute);
     TEST_ASSERT_EQUAL(30, task3_currTimeInst.second);
     TEST_ASSERT_EQUAL(242, task3_currTimeInst.milisecond);
+
+    TEST_ASSERT_EQUAL(2024, alarmSetValue.year);
+    TEST_ASSERT_EQUAL(9, alarmSetValue.month);
+    TEST_ASSERT_EQUAL(21, alarmSetValue.day);
+    TEST_ASSERT_EQUAL(3, alarmSetValue.hour);
+    TEST_ASSERT_EQUAL(18, alarmSetValue.minute);
+    TEST_ASSERT_EQUAL(30, alarmSetValue.second);
+    TEST_ASSERT_EQUAL(242, alarmSetValue.milisecond);
 
 }
 
@@ -446,6 +500,84 @@ void test_TaskScheduler_run_multiple_tasks_overdue(void)
     TS_InitErrorCodes_t result = TS_Init(&input);
     TS_Run();
 
+    HWTimestampRet.day = 22;
+
+    TS_Run();
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
+    
+    TEST_ASSERT_EQUAL(1, task1_callCounter);
+    TEST_ASSERT_EQUAL(1, task2_callCounter);
+    TEST_ASSERT_EQUAL(1, task3_callCounter);
+    
+    TEST_ASSERT_EQUAL(2024, task1_currTimeInst.year);
+    TEST_ASSERT_EQUAL(9, task1_currTimeInst.month);
+    TEST_ASSERT_EQUAL(22, task1_currTimeInst.day);
+    TEST_ASSERT_EQUAL(15, task1_currTimeInst.hour);
+    TEST_ASSERT_EQUAL(18, task1_currTimeInst.minute);
+    TEST_ASSERT_EQUAL(30, task1_currTimeInst.second);
+    TEST_ASSERT_EQUAL(242, task1_currTimeInst.milisecond);
+
+    TEST_ASSERT_EQUAL(2024, task2_currTimeInst.year);
+    TEST_ASSERT_EQUAL(9, task2_currTimeInst.month);
+    TEST_ASSERT_EQUAL(22, task2_currTimeInst.day);
+    TEST_ASSERT_EQUAL(15, task2_currTimeInst.hour);
+    TEST_ASSERT_EQUAL(18, task2_currTimeInst.minute);
+    TEST_ASSERT_EQUAL(0, task2_currTimeInst.second);
+    TEST_ASSERT_EQUAL(242, task2_currTimeInst.milisecond);
+
+    TEST_ASSERT_EQUAL(2024, task3_currTimeInst.year);
+    TEST_ASSERT_EQUAL(9, task3_currTimeInst.month);
+    TEST_ASSERT_EQUAL(23, task3_currTimeInst.day);
+    TEST_ASSERT_EQUAL(3, task3_currTimeInst.hour);
+    TEST_ASSERT_EQUAL(17, task3_currTimeInst.minute);
+    TEST_ASSERT_EQUAL(30, task3_currTimeInst.second);
+    TEST_ASSERT_EQUAL(242, task3_currTimeInst.milisecond);
+
+    TEST_ASSERT_EQUAL(2024, alarmSetValue.year);
+    TEST_ASSERT_EQUAL(9, alarmSetValue.month);
+    TEST_ASSERT_EQUAL(22, alarmSetValue.day);
+    TEST_ASSERT_EQUAL(3, alarmSetValue.hour);
+    TEST_ASSERT_EQUAL(18, alarmSetValue.minute);
+    TEST_ASSERT_EQUAL(0, alarmSetValue.second);
+    TEST_ASSERT_EQUAL(242, alarmSetValue.milisecond);
+
+}
+
+void test_TaskScheduler_run_multiple_tasks_properly_preemtied(void)
+{
+        //ARRANGE
+    TS_TimeStruct_t task1_currTimeInst = {0};
+    TS_TimeStruct_t task2_currTimeInst = {0};
+    TS_TimeStruct_t task3_currTimeInst = {0};
+
+    TaskDescriptor_t TaskListAlt[TASK_LIST_LENGTH] = {
+        {dummy_task1, dummy_task1_planNext, TS_Priority_low,DUMMY_TASK_MAX_EXEC_TIME, &task1_currTimeInst},
+        {dummy_task2, dummy_task2_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &task2_currTimeInst},
+        {dummy_task3, dummy_task3_planNext, TS_Priority_high,DUMMY_TASK_MAX_EXEC_TIME, &task3_currTimeInst}
+    };
+
+    task1_planNextRetVal.minute = 1;
+    task2_planNextRetVal.minute = 1;
+    task3_planNextRetVal.minute = 1;
+
+
+    HWTimestampRet.year = 2024;
+    HWTimestampRet.day = 20;
+    HWTimestampRet.month = 9;
+    HWTimestampRet.hour = 15;
+    HWTimestampRet.minute = 17;
+    HWTimestampRet.second = 30;
+    HWTimestampRet.milisecond = 242;
+
+    TS_InitStruct_t input = goodInit();
+    input.TaskListTab = TaskListAlt;
+    
+    //ACT
+    TS_InitErrorCodes_t result = TS_Init(&input);
+    TS_Run();
+
     HWTimestampRet.year = 2024;
     HWTimestampRet.day = 22;
     HWTimestampRet.month = 9;
@@ -463,29 +595,188 @@ void test_TaskScheduler_run_multiple_tasks_overdue(void)
     TEST_ASSERT_EQUAL(1, task2_callCounter);
     TEST_ASSERT_EQUAL(1, task3_callCounter);
     
-    TEST_ASSERT_EQUAL(2024, task1_currTimeInst.year);
-    TEST_ASSERT_EQUAL(9, task1_currTimeInst.month);
-    TEST_ASSERT_EQUAL(22, task1_currTimeInst.day);
-    TEST_ASSERT_EQUAL(15, task1_currTimeInst.hour);
-    TEST_ASSERT_EQUAL(19, task1_currTimeInst.minute);
-    TEST_ASSERT_EQUAL(30, task1_currTimeInst.second);
-    TEST_ASSERT_EQUAL(242, task1_currTimeInst.milisecond);
+    TEST_ASSERT_EQUAL(3, TaskOrderTab[0]);
+    TEST_ASSERT_EQUAL(2, TaskOrderTab[1]);
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[2]);
 
-    TEST_ASSERT_EQUAL(2024, task2_currTimeInst.year);
-    TEST_ASSERT_EQUAL(9, task2_currTimeInst.month);
-    TEST_ASSERT_EQUAL(22, task2_currTimeInst.day);
-    TEST_ASSERT_EQUAL(15, task2_currTimeInst.hour);
-    TEST_ASSERT_EQUAL(18, task2_currTimeInst.minute);
-    TEST_ASSERT_EQUAL(0, task2_currTimeInst.second);
-    TEST_ASSERT_EQUAL(242, task2_currTimeInst.milisecond);
+}
 
-    TEST_ASSERT_EQUAL(2024, task3_currTimeInst.year);
-    TEST_ASSERT_EQUAL(9, task3_currTimeInst.month);
-    TEST_ASSERT_EQUAL(21, task3_currTimeInst.day);
-    TEST_ASSERT_EQUAL(3, task3_currTimeInst.hour);
-    TEST_ASSERT_EQUAL(17, task3_currTimeInst.minute);
-    TEST_ASSERT_EQUAL(30, task3_currTimeInst.second);
-    TEST_ASSERT_EQUAL(242, task3_currTimeInst.milisecond);
+void test_TaskScheduler_run_multiple_tasks_properly_preemtied_same_priority(void)
+{
+        //ARRANGE
+    TS_TimeStruct_t task1_currTimeInst = {0};
+    TS_TimeStruct_t task2_currTimeInst = {0};
+    TS_TimeStruct_t task3_currTimeInst = {0};
+
+    TaskDescriptor_t TaskListAlt[TASK_LIST_LENGTH] = {
+        {dummy_task1, dummy_task1_planNext, TS_Priority_high,DUMMY_TASK_MAX_EXEC_TIME, &task1_currTimeInst},
+        {dummy_task2, dummy_task2_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &task2_currTimeInst},
+        {dummy_task3, dummy_task3_planNext, TS_Priority_high,DUMMY_TASK_MAX_EXEC_TIME, &task3_currTimeInst}
+    };
+
+    task1_planNextRetVal.minute = 1;
+    task2_planNextRetVal.minute = 1;
+    task3_planNextRetVal.minute = 1;
+
+
+    HWTimestampRet.year = 2024;
+    HWTimestampRet.day = 20;
+    HWTimestampRet.month = 9;
+    HWTimestampRet.hour = 15;
+    HWTimestampRet.minute = 17;
+    HWTimestampRet.second = 30;
+    HWTimestampRet.milisecond = 242;
+
+    TS_InitStruct_t input = goodInit();
+    input.TaskListTab = TaskListAlt;
+    
+    //ACT
+    TS_InitErrorCodes_t result = TS_Init(&input);
+    TS_Run();
+
+    HWTimestampRet.year = 2024;
+    HWTimestampRet.day = 22;
+    HWTimestampRet.month = 9;
+    HWTimestampRet.hour = 15;
+    HWTimestampRet.minute = 18;
+    HWTimestampRet.second = 30;
+    HWTimestampRet.milisecond = 242;
+
+    TS_Run();
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
+    
+    TEST_ASSERT_EQUAL(1, task1_callCounter);
+    TEST_ASSERT_EQUAL(1, task2_callCounter);
+    TEST_ASSERT_EQUAL(1, task3_callCounter);
+    
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[0]);
+    TEST_ASSERT_EQUAL(3, TaskOrderTab[1]);
+    TEST_ASSERT_EQUAL(2, TaskOrderTab[2]);
+
+}
+
+void test_TaskScheduler_run_multiple_tasks_properly_preemtied_same_priority_different_max_time(void)
+{
+        //ARRANGE
+    TS_TimeStruct_t task1_currTimeInst = {0};
+    TS_TimeStruct_t task2_currTimeInst = {0};
+    TS_TimeStruct_t task3_currTimeInst = {0};
+
+    TaskDescriptor_t TaskListAlt[TASK_LIST_LENGTH] = {
+        {dummy_task1, dummy_task1_planNext, TS_Priority_high,DUMMY_TASK_MAX_EXEC_TIME, &task1_currTimeInst},
+        {dummy_task2, dummy_task2_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &task2_currTimeInst},
+        {dummy_task3, dummy_task3_planNext, TS_Priority_high,DUMMY_TASK_MAX_EXEC_TIME2, &task3_currTimeInst}
+    };
+
+    task1_planNextRetVal.minute = 1;
+    task2_planNextRetVal.minute = 1;
+    task3_planNextRetVal.minute = 1;
+
+
+    HWTimestampRet.year = 2024;
+    HWTimestampRet.day = 20;
+    HWTimestampRet.month = 9;
+    HWTimestampRet.hour = 15;
+    HWTimestampRet.minute = 17;
+    HWTimestampRet.second = 30;
+    HWTimestampRet.milisecond = 242;
+
+    TS_InitStruct_t input = goodInit();
+    input.TaskListTab = TaskListAlt;
+    
+    //ACT
+    TS_InitErrorCodes_t result = TS_Init(&input);
+    TS_Run();
+
+    HWTimestampRet.year = 2024;
+    HWTimestampRet.day = 22;
+    HWTimestampRet.month = 9;
+    HWTimestampRet.hour = 15;
+    HWTimestampRet.minute = 18;
+    HWTimestampRet.second = 30;
+    HWTimestampRet.milisecond = 242;
+
+    TS_Run();
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
+    
+    TEST_ASSERT_EQUAL(1, task1_callCounter);
+    TEST_ASSERT_EQUAL(1, task2_callCounter);
+    TEST_ASSERT_EQUAL(1, task3_callCounter);
+    
+    TEST_ASSERT_EQUAL(3, TaskOrderTab[0]);
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[1]);
+    TEST_ASSERT_EQUAL(2, TaskOrderTab[2]);
+
+}
+
+void test_TaskScheduler_run_multiple_tasks_chained_tasks(void)
+{
+    //ARRANGE
+    TS_TimeStruct_t task1_currTimeInst = {0};
+    TS_TimeStruct_t task2_currTimeInst = {0};
+    TS_TimeStruct_t task3_currTimeInst = {0};
+
+    TaskDescriptor_t TaskListAlt[TASK_LIST_LENGTH] = {
+        {dummy_task1, dummy_task1_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &task1_currTimeInst},
+        {dummy_task2, dummy_task2_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &task2_currTimeInst},
+        {dummy_task3, dummy_task3_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &task3_currTimeInst}
+    };
+
+    task1_planNextRetVal.minute = 1;
+    task2_planNextRetVal.minute = 2;
+    task3_planNextRetVal.minute = 4;
+
+
+    HWTimestampRet.year = 2024;
+    HWTimestampRet.day = 20;
+    HWTimestampRet.month = 9;
+    HWTimestampRet.hour = 15;
+    HWTimestampRet.minute = 17;
+    HWTimestampRet.second = 30;
+    HWTimestampRet.milisecond = 242;
+
+    TS_InitStruct_t input = goodInit();
+    input.TaskListTab = TaskListAlt;
+    
+    //ACT
+    TS_InitErrorCodes_t result = TS_Init(&input);
+    
+    TS_Run();
+
+    HWTimestampRet.minute = 18;
+
+    TS_Run(); //T1
+
+    HWTimestampRet.minute = 19;
+
+    TS_Run(); //T1 T2
+
+    HWTimestampRet.minute = 20;
+
+    TS_Run(); // T1
+
+    HWTimestampRet.minute = 21;
+
+    TS_Run(); // T1 T2 T3
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
+    
+    TEST_ASSERT_EQUAL(4, task1_callCounter);
+    TEST_ASSERT_EQUAL(2, task2_callCounter);
+    TEST_ASSERT_EQUAL(1, task3_callCounter);
+
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[0]);
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[1]);
+    TEST_ASSERT_EQUAL(2, TaskOrderTab[2]);
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[3]);
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[4]);
+    TEST_ASSERT_EQUAL(2, TaskOrderTab[5]);
+    TEST_ASSERT_EQUAL(3, TaskOrderTab[6]);
 
 }
 
@@ -547,16 +838,22 @@ static bool dummy_setNextTaskBreaker(const TS_TimeStruct_t* input)
 static void dummy_task1(void)
 {
     task1_callCounter++;
+    TaskOrderTab[TaskOrderTab_index] = 1;
+    TaskOrderTab_index++;
 }
 
 static void dummy_task2(void)
 {
     task2_callCounter++;
+    TaskOrderTab[TaskOrderTab_index] = 2;
+    TaskOrderTab_index++;
 }
 
 static void dummy_task3(void)
 {
     task3_callCounter++;
+    TaskOrderTab[TaskOrderTab_index] = 3;
+    TaskOrderTab_index++;
 }
 
 static TS_TimeStruct_t dummy_task1_planNext(void)
