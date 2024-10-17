@@ -213,7 +213,7 @@ void test_TimeStructCalc_add_roll_over_to_months_febuary_in_non_leap_year(void)
     //ARRANGE
     TS_TimeStruct_t a = {.data = {.year = 1, .month = 2, .day = 20, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
     TS_TimeStruct_t b = {.data = {.year = 0, .month = 0, .day = 20, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
-    TS_TimeStruct_t expected_result = {.data = {.year = 0, .month = 3, .day = 12, .hour = 20, .minute = 20, .second = 20, .milisecond = 200}};
+    TS_TimeStruct_t expected_result = {.data = {.year = 1, .month = 3, .day = 12, .hour = 20, .minute = 20, .second = 20, .milisecond = 200}};
 
     //ACT
     TS_TimeStruct_t result = TimeStruct_add(a,b);
@@ -227,7 +227,7 @@ void test_TimeStructCalc_add_roll_over_to_years_part1(void)
 {
     //ARRANGE
     TS_TimeStruct_t a = {.data = {.year = 0, .month = 6, .day = 10, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
-    TS_TimeStruct_t b = {.data = {.year = 0, .month = 6, .day = 10, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
+    TS_TimeStruct_t b = {.data = {.year = 0, .month = 7, .day = 10, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
     TS_TimeStruct_t expected_result = {.data = {.year = 1, .month = 1, .day = 20, .hour = 20, .minute = 20, .second = 20, .milisecond = 200}};
 
     //ACT
