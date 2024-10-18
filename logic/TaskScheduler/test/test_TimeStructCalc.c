@@ -182,8 +182,38 @@ void test_TimeStructCalc_add_roll_over_to_months_part4(void)
 {
     //ARRANGE
     TS_TimeStruct_t a = {.data = {.year = 0, .month = 4, .day = 20, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
-    TS_TimeStruct_t b = {.data = {.year = 0, .month = 0, .day = 20, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
-    TS_TimeStruct_t expected_result = {.data = {.year = 0, .month = 5, .day = 10, .hour = 20, .minute = 20, .second = 20, .milisecond = 200}};
+    TS_TimeStruct_t b = {.data = {.year = 0, .month = 0, .day = 12, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
+    TS_TimeStruct_t expected_result = {.data = {.year = 0, .month = 5, .day = 2, .hour = 20, .minute = 20, .second = 20, .milisecond = 200}};
+
+    //ACT
+    TS_TimeStruct_t result = TimeStruct_add(a,b);
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(expected_result.raw, result.raw);
+
+}
+
+void test_TimeStructCalc_add_roll_over_to_months_part5(void)
+{
+    //ARRANGE
+    TS_TimeStruct_t a = {.data = {.year = 0, .month = 1, .day = 31, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
+    TS_TimeStruct_t b = {.data = {.year = 0, .month = 1, .day = 0, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
+    TS_TimeStruct_t expected_result = {.data = {.year = 0, .month = 2, .day = 29, .hour = 20, .minute = 20, .second = 20, .milisecond = 200}};
+
+    //ACT
+    TS_TimeStruct_t result = TimeStruct_add(a,b);
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(expected_result.raw, result.raw);
+
+}
+
+void test_TimeStructCalc_add_roll_over_to_months_part6(void)
+{
+    //ARRANGE
+    TS_TimeStruct_t a = {.data = {.year = 1, .month = 1, .day = 31, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
+    TS_TimeStruct_t b = {.data = {.year = 0, .month = 1, .day = 0, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
+    TS_TimeStruct_t expected_result = {.data = {.year = 1, .month = 2, .day = 28, .hour = 20, .minute = 20, .second = 20, .milisecond = 200}};
 
     //ACT
     TS_TimeStruct_t result = TimeStruct_add(a,b);

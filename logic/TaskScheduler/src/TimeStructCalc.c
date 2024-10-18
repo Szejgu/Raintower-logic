@@ -6,6 +6,11 @@
 #define MONTH_FEB_LEAP 0x00001C1A22041018
 #define MONHT_FEB_COMMON 0x00001C1A32041018
 
+#define INCORRECT_NUM_DAYS 0xFF
+
+static const uint8_t days_in_common_year[13] = {INCORRECT_NUM_DAYS, 31, 28, 31, 30, 31, 31, 30, 31, 30, 31, 30, 31};
+static const uint8_t days_in_leap_year[13] = {INCORRECT_NUM_DAYS, 31, 29, 31, 30, 31, 31, 30, 31, 30, 31, 30, 31};
+
 typedef enum{
 
     Month_short = 0x01,
@@ -91,16 +96,26 @@ TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time)
         ret.data.month = 1;
     }
 
+    bool isLeap = isLeapYear(ret.data.year);
+
+    if(isLeap)
+    {
+        if(ret.data.day > days_in_leap_year[ret.data.month])
+        {
+            ret.data.day = days_in_leap_year[ret.data.month];
+        }
+    }
+    else
+    {
+        if(ret.data.day > days_in_common_year[ret.data.month])
+        {
+            ret.data.day = days_in_common_year[ret.data.month];
+        }
+    }
+
     ret.data.day_overflow = 0;
     ret.data.hour_overflow = 0;
     ret.data.month_overflow = 0;
-
-    return ret;
-}
-
-TS_TimeStruct_ComparisonResult_t TimeStruct_compare(TS_TimeStruct_t target, TS_TimeStruct_t secondary)
-{
-    TS_TimeStruct_ComparisonResult_t ret = TimeStruct_equal;
 
     return ret;
 }
