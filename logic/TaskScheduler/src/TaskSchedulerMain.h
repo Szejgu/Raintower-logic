@@ -15,14 +15,16 @@ typedef enum{
 }TaskPriority_t;
 
 #define TASK_LIMIT_STRUCT { \
-    .year = 0, \
-    .month = 0, \
-    .day = 0, \
-    .hour = 0, \
-    .minute = 0, \
-    .second = 5, \
-    .milisecond = 0 \
-    } 
+    .data = {\
+        .year = 0, \
+        .month = 0, \
+        .day = 0, \
+        .hour = 0, \
+        .minute = 0, \
+        .second = 5, \
+        .milisecond = 0 \
+        } \
+}
 
 typedef struct{
 

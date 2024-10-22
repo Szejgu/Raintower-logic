@@ -7,23 +7,27 @@
 
 #define TASK_LIST_LENGTH 3
 #define DUMMY_TASK_MAX_EXEC_TIME { \
-    .year = 0, \
-    .month = 0, \
-    .day = 0, \
-    .hour = 0, \
-    .minute = 0, \
-    .second = 1, \
-    .milisecond = 0 \
+    .data = { \
+        .year = 0, \
+        .month = 0, \
+        .day = 0, \
+        .hour = 0, \
+        .minute = 0, \
+        .second = 1, \
+        .milisecond = 0 \
+        }\
 }
 
-#define TASK_MAX_EXEC_TIME_ALL_ZERO { \
-    .year = 0, \
-    .month = 0, \
-    .day = 0, \
-    .hour = 0, \
-    .minute = 0, \
-    .second = 0, \
-    .milisecond = 0 \
+#define TASK_MAX_EXEC_TIME_ALL_ZERO {\
+    .data = { \
+        .year = 0, \
+        .month = 0, \
+        .day = 0, \
+        .hour = 0, \
+        .minute = 0, \
+        .second = 0, \
+        .milisecond = 0 \
+        }\
 }
 
 static void dummy_fun(void);
@@ -115,7 +119,7 @@ void test_TaskScheduler_Init_TaskList_Integrity_error_maximumExecTooHigh(void)
     TS_TimeStruct_t currTimeTabInst[TASK_LIST_LENGTH] = {0};
 
     TS_TimeStruct_t MaxTaskTime = TASK_LIMIT_STRUCT;
-    MaxTaskTime.year += 1;
+    MaxTaskTime.data.year += 1;
 
     TaskDescriptor_t TaskList[TASK_LIST_LENGTH] = {
         {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &currTimeTabInst[0]},
