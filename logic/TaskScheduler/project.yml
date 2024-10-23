@@ -28,6 +28,15 @@
 
 :extension:
   :executable: .out
+:flags:
+  :test:
+    :compile:
+      :*:
+      - -Wall
+      - -Wpedantic
+      - -Wextra
+      - -Wstrict-prototypes
+
 
 :paths:
   :test:

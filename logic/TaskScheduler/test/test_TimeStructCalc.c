@@ -13,6 +13,31 @@ void tearDown(void)
 {
 }
 
+void test_TimeStruct_validity_of_struct(void)
+{
+    //ARRANGE
+    TS_TimeStruct_t data_representation = {.data = { .milisecond = 100, .second = 20, .minute = 30, .hour = 4, .day = 5, .month = 6, .year = 7}}; // 0x00000730511E5064
+    uint64_t raw_representation = 0x00000838616878C8; //{.data = { .milisecond = 200, .second = 30, .minute = 40, .hour = 5, .day = 6, .month = 7, .year = 8}};
+    TS_TimeStruct_t declaration_data;
+    uint64_t declaration_raw;
+
+    //ACT
+    declaration_raw = data_representation.raw;
+    declaration_data.raw = raw_representation;
+
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(0x00000730511E5064, declaration_raw);
+    TEST_ASSERT_EQUAL(200, declaration_data.data.milisecond);
+    TEST_ASSERT_EQUAL(30, declaration_data.data.second);
+    TEST_ASSERT_EQUAL(40, declaration_data.data.minute);
+    TEST_ASSERT_EQUAL(5, declaration_data.data.hour);
+    TEST_ASSERT_EQUAL(6, declaration_data.data.day);
+    TEST_ASSERT_EQUAL(7, declaration_data.data.month);
+    TEST_ASSERT_EQUAL(8, declaration_data.data.year);
+
+}
+
 void test_TimeStructCalc_add_roll_over_to_seconds_part1(void)
 {
     //ARRANGE
