@@ -26,6 +26,15 @@ typedef enum{
         } \
 }
 
+/**
+ * @struct TaskDescriptor_t 
+ * @brief Data structure descriing a task
+ * @param TaskFunPtr pointer to function to schedule
+ * @param PlanNextInst pointer to function which will return a RELATIVE time to the next occurence of the task
+ * @param Priority priority of the task
+ * @param MaximumExecTime RELATIVE time in which the task has to end, it's the worst case scenario
+ * @param TimeToNextInst pointer to the data structure, where the next occurence is held. It's held as an ABSOLUTE time
+ */
 typedef struct{
 
     void (*TaskFunPtr)(void);
@@ -82,11 +91,21 @@ void TS_UpdateWakeupStatus(bool status);
 void TS_Run(void);
 
 /**
+ * tutaj rozważyć czy czasem nie trzeba jeszcze jednej funkcji, która będzie wywyoływana przy inicie, dla "pierwszego" przeliczenia tablicy bez wywoływania zadania
+ * tak żeby mieć warunek początkowy.
+ * bo tobez sensu żeby tak dużo funkcjonalności zawierać w jedną funkcją
+ * nawet jeśli przyjmniemy że mamy niezliczoną ilość funkcji pomocniczych
+ * to powinno być bardziej transparentne
+ * ale z drugiej strony powinno też być odporne na błędy
+ */
+
+/**
  * @brief Helper function which translates the given time struct in such a way that the resulting struct is an absolute date
  * @remark Any other time struct given as a result of Plan Next is a relative representation of next occurence
  * @remark with this function it's possible to plan for specific minute/day/hour rather than planning after a given ammount of time
  */
 TS_TimeStruct_t TS_PlanAbsolute(TS_TimeStruct_t date);
+
 
 /**
  * @brief This function is for use for other modules to signify the task execution time has been exceeded

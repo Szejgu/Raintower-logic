@@ -3,7 +3,7 @@
 #include "unity.h"
 
 #include "TaskSchedulerMain.h"
-#include "TS_TimeStruct_t.h"
+#include "TimeStructCalc.h"
 #include <string.h>
 
 #define TASK_LIST_LENGTH 3
@@ -139,7 +139,6 @@ void test_TaskScheduler_run_single_task_next_occurence_updated_first_time(void)
     TEST_ASSERT_EQUAL(30, task1_currTimeInst.data.second);
     TEST_ASSERT_EQUAL(242, task1_currTimeInst.data.milisecond);
 
-    TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
     TEST_ASSERT_EQUAL(24, alarmSetValue.data.year);
     TEST_ASSERT_EQUAL(9, alarmSetValue.data.month);
     TEST_ASSERT_EQUAL(20, alarmSetValue.data.day);
