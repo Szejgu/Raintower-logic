@@ -3,6 +3,7 @@
 #include "unity.h"
 
 #include "TaskSchedulerMain.h"
+#include "TimeStructCalc.h"
 #include "TS_TimeStruct_t.h"
 
 #define TASK_LIST_LENGTH 3

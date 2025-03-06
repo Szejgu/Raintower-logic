@@ -3,6 +3,8 @@
 #include "unity.h"
 
 #include "TaskSchedulerMain.h"
+#include "TimeStructCalc.h"
+#include "TS_TimeStruct_t.h"
 
 void setUp(void)
 {
