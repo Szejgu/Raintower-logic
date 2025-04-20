@@ -308,4 +308,36 @@ void test_TimeStructCalc_add_roll_over_to_years_part2(void)
 
 }
 
+void test_TimeStructCalc_add_arbitrary_numbers_case_1(void)
+{
+
+    //ARRANGE
+    TS_TimeStruct_t a = {.data = {.year = 24, .month = 9, .day = 20, .hour = 15, .minute = 17, .second = 30, .milisecond = 242, .hour_overflow = 0, .day_overflow = 0, .month_overflow = 0, .unused = 0}};
+    TS_TimeStruct_t b = {.data = {.year = 0, .month = 0, .day = 0, .hour = 0, .minute = 1, .second = 0, .milisecond = 0, .hour_overflow = 0, .day_overflow = 0, .month_overflow = 0, .unused = 0}};
+    TS_TimeStruct_t expected_result = {.data = {.year = 24, .month = 9, .day = 20, .hour = 15, .minute = 18, .second = 30, .milisecond = 242, .hour_overflow = 0, .day_overflow = 0, .month_overflow = 0, .unused = 0}};
+
+    //ACT
+    TS_TimeStruct_t result = TimeStruct_add(a,b);
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(expected_result.raw, result.raw);
+
+}
+
+void test_TimeStructCalc_add_arbitrary_numbers_case_2(void)
+{
+
+
+    //ARRANGE
+    TS_TimeStruct_t a = {.data = {.year = 24, .month = 9, .day = 20, .hour = 15, .minute = 17, .second = 30, .milisecond = 242, .hour_overflow = 0, .day_overflow = 0, .month_overflow = 0, .unused = 0}};
+    TS_TimeStruct_t b = {.data = {.year = 0, .month = 0, .day = 0, .hour = 0, .minute = 0, .second = 0, .milisecond = 25, .hour_overflow = 0, .day_overflow = 0, .month_overflow = 0, .unused = 0}};
+    TS_TimeStruct_t expected_result = {.data = {.year = 24, .month = 9, .day = 20, .hour = 15, .minute = 17, .second = 30, .milisecond = 267, .hour_overflow = 0, .day_overflow = 0, .month_overflow = 0, .unused = 0}};
+
+    //ACT
+    TS_TimeStruct_t result = TimeStruct_add(a,b);
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(expected_result.raw, result.raw);
+
+}
 #endif // TEST

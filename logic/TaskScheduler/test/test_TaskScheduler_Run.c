@@ -132,6 +132,7 @@ void test_TaskScheduler_run_single_task_next_occurence_updated_first_time(void)
 
     //ASSERT
     TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
+    TEST_ASSERT_EQUAL(0, task1_callCounter);
     TEST_ASSERT_EQUAL(24, task1_currTimeInst.data.year);
     TEST_ASSERT_EQUAL(9, task1_currTimeInst.data.month);
     TEST_ASSERT_EQUAL(20, task1_currTimeInst.data.day);
@@ -189,6 +190,7 @@ void test_TaskScheduler_run_single_task_next_occurence_updated(void)
 
     //ASSERT
     TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
+    TEST_ASSERT_EQUAL(0, task1_callCounter);
     TEST_ASSERT_EQUAL(24, task1_currTimeInst.data.year);
     TEST_ASSERT_EQUAL(9, task1_currTimeInst.data.month);
     TEST_ASSERT_EQUAL(20, task1_currTimeInst.data.day);
@@ -441,7 +443,7 @@ void test_TaskScheduler_run_multiple_tasks_triggered_and_updated(void)
     TEST_ASSERT_EQUAL(9, task1_currTimeInst.data.month);
     TEST_ASSERT_EQUAL(20, task1_currTimeInst.data.day);
     TEST_ASSERT_EQUAL(15, task1_currTimeInst.data.hour);
-    TEST_ASSERT_EQUAL(19, task1_currTimeInst.data.minute);
+    TEST_ASSERT_EQUAL(18, task1_currTimeInst.data.minute);
     TEST_ASSERT_EQUAL(30, task1_currTimeInst.data.second);
     TEST_ASSERT_EQUAL(242, task1_currTimeInst.data.milisecond);
 
@@ -457,14 +459,14 @@ void test_TaskScheduler_run_multiple_tasks_triggered_and_updated(void)
     TEST_ASSERT_EQUAL(9, task3_currTimeInst.data.month);
     TEST_ASSERT_EQUAL(21, task3_currTimeInst.data.day);
     TEST_ASSERT_EQUAL(3, task3_currTimeInst.data.hour);
-    TEST_ASSERT_EQUAL(18, task3_currTimeInst.data.minute);
+    TEST_ASSERT_EQUAL(17, task3_currTimeInst.data.minute);
     TEST_ASSERT_EQUAL(30, task3_currTimeInst.data.second);
     TEST_ASSERT_EQUAL(242, task3_currTimeInst.data.milisecond);
 
     TEST_ASSERT_EQUAL(24, alarmSetValue.data.year);
     TEST_ASSERT_EQUAL(9, alarmSetValue.data.month);
-    TEST_ASSERT_EQUAL(21, alarmSetValue.data.day);
-    TEST_ASSERT_EQUAL(3, alarmSetValue.data.hour);
+    TEST_ASSERT_EQUAL(20, alarmSetValue.data.day);
+    TEST_ASSERT_EQUAL(15, alarmSetValue.data.hour);
     TEST_ASSERT_EQUAL(18, alarmSetValue.data.minute);
     TEST_ASSERT_EQUAL(30, alarmSetValue.data.second);
     TEST_ASSERT_EQUAL(242, alarmSetValue.data.milisecond);

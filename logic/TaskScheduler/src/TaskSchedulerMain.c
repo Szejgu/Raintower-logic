@@ -4,8 +4,10 @@
 #define TASK_INDEX_NOT_PLANNED 0xFFFFFFFFU
 #define MINIMUM_TIME_EXECUTION_MARGIN 5U
 #define MAX_NUMBER_OF_TASKS 10
+#define MARGIN_FOR_IMMIDIATE_TASK_EXECUTION_MS 20
 
 static const TS_TimeStruct_t MaximumExecTimeInst = TASK_LIMIT_STRUCT;
+static TS_TimeStruct_t now = {0};
 
 static   TaskDescriptor_t* TaskListTab_local = NULL;
 static   size_t TaskListTab_size_local = 0;
@@ -22,9 +24,11 @@ static uint32_t index_of_task_to_execute_next = TASK_INDEX_NOT_PLANNED;
 
 static bool wakeup_from_RTC_IRQ = false;
 static bool moduleInitState = false;
+static bool TaskListNeedsUpdating = false;
 
 static void updateNextTaskIndex(void);
-static void updateTimeToNextInst(void);
+static void updateTimeToNextInstAll(void);
+static void updateTimeToNextInst(uint32_t index);
 static bool isNextTaskImmidiate(void);
 
 TS_InitErrorCodes_t TS_Init(TS_InitStruct_t* input)
@@ -103,6 +107,7 @@ TS_InitErrorCodes_t TS_Init(TS_InitStruct_t* input)
 
         moduleInitState = true;
         retVal = TS_InitErrorCodes_noError;
+        TaskListNeedsUpdating = true;
     }
 
     return retVal;
@@ -132,12 +137,22 @@ void TS_Run(void)
         return;
    }
 
-   updateTimeToNextInst();
+   updateCurrentTimeFromHW_local(&now);
+
+   if(TaskListNeedsUpdating)
+   {
+    updateTimeToNextInstAll();
+    TaskListNeedsUpdating = false;
+   }
 
    updateNextTaskIndex();
 
     if(isNextTaskImmidiate())
     {
+
+        TaskListTab_local[index_of_task_to_execute_next].TaskFunPtr();
+        updateTimeToNextInst(index_of_task_to_execute_next);
+        setNextWakeup_local(TaskListTab_local[index_of_task_to_execute_next].TimeToNextInst);
 
     }
     else
@@ -203,11 +218,8 @@ static void updateNextTaskIndex(void)
 
 }
 
-static void updateTimeToNextInst(void)
-{
-    TS_TimeStruct_t now = {0};
-    updateCurrentTimeFromHW_local(&now);
-
+static void updateTimeToNextInstAll(void)
+{  
     for(uint32_t i = 0; i < TaskListTab_size_local; i++)
     {
         *(TaskListTab_local[i].TimeToNextInst) = TimeStruct_add(now, TaskListTab_local[i].PlanNextInst());
@@ -217,8 +229,24 @@ static void updateTimeToNextInst(void)
 static bool isNextTaskImmidiate(void)
 {
     bool ret = false;
+    TS_TimeStruct_t margin = {0};
+    margin.data.milisecond = MARGIN_FOR_IMMIDIATE_TASK_EXECUTION_MS;
 
+    TS_TimeStruct_t nowWithMargin = TimeStruct_add(now, margin);
 
+    //printf("now: %lld , margin %lld\r\n", now.raw, nextTaskWithMargin.raw);
+    //printf("NOW_TIME: h:%d, m:%d, s:%d, ms:%d\r\n", now.data.hour, now.data.minute, now.data.second, now.data.milisecond);
+    //printf("MARGIN_TIME: h:%d, m:%d, s:%d, ms:%d\r\n", nextTaskWithMargin.data.hour, nextTaskWithMargin.data.minute, nextTaskWithMargin.data.second, nextTaskWithMargin.data.milisecond);
+
+    if(nowWithMargin.raw >= TaskListTab_local[index_of_task_to_execute_next].TimeToNextInst->raw)
+    {
+        ret = true;
+    }
 
     return ret;
+}
+
+static void updateTimeToNextInst(uint32_t index)
+{
+    *(TaskListTab_local[index].TimeToNextInst) = TimeStruct_add(now, TaskListTab_local[index].PlanNextInst());
 }
