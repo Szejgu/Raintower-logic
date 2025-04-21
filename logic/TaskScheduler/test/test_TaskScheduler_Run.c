@@ -91,6 +91,7 @@ void tearDown(void)
 {
 }
 
+
 void test_TaskScheduler_run_not_executed_without_init(void)
 {
     //ARRANGE
@@ -544,14 +545,70 @@ void test_TaskScheduler_run_multiple_tasks_overdue(void)
     TEST_ASSERT_EQUAL(24, alarmSetValue.data.year);
     TEST_ASSERT_EQUAL(9, alarmSetValue.data.month);
     TEST_ASSERT_EQUAL(22, alarmSetValue.data.day);
-    TEST_ASSERT_EQUAL(3, alarmSetValue.data.hour);
+    TEST_ASSERT_EQUAL(15, alarmSetValue.data.hour);
     TEST_ASSERT_EQUAL(18, alarmSetValue.data.minute);
     TEST_ASSERT_EQUAL(0, alarmSetValue.data.second);
     TEST_ASSERT_EQUAL(242, alarmSetValue.data.milisecond);
 
 }
 
-void test_TaskScheduler_run_multiple_tasks_properly_preemtied(void)
+void test_TaskScheduler_run_multiple_tasks_properly_preemtied_two_tasks(void)
+{
+        //ARRANGE
+    TS_TimeStruct_t task1_currTimeInst = {0};
+    TS_TimeStruct_t task2_currTimeInst = {0};
+    TS_TimeStruct_t task3_currTimeInst = {0};
+
+    TaskDescriptor_t TaskListAlt[TASK_LIST_LENGTH] = {
+        {dummy_task1, dummy_task1_planNext, TS_Priority_low,DUMMY_TASK_MAX_EXEC_TIME, &task1_currTimeInst},
+        {dummy_task2, dummy_task2_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &task2_currTimeInst},
+        {dummy_task3, dummy_task3_planNext, TS_Priority_high,DUMMY_TASK_MAX_EXEC_TIME, &task3_currTimeInst}
+    };
+
+    task1_planNextRetVal.data.minute = 1;
+    task2_planNextRetVal.data.minute = 5;
+    task3_planNextRetVal.data.minute = 1;
+
+
+    HWTimestampRet.data.year = 24;
+    HWTimestampRet.data.day = 20;
+    HWTimestampRet.data.month = 9;
+    HWTimestampRet.data.hour = 15;
+    HWTimestampRet.data.minute = 17;
+    HWTimestampRet.data.second = 30;
+    HWTimestampRet.data.milisecond = 242;
+
+    TS_InitStruct_t input = goodInit();
+    input.TaskListTab = TaskListAlt;
+    
+    //ACT
+    TS_InitErrorCodes_t result = TS_Init(&input);
+    TS_Run();
+
+    HWTimestampRet.data.year = 24;
+    HWTimestampRet.data.day = 20;
+    HWTimestampRet.data.month = 9;
+    HWTimestampRet.data.hour = 15;
+    HWTimestampRet.data.minute = 18;
+    HWTimestampRet.data.second = 30;
+    HWTimestampRet.data.milisecond = 242;
+
+    TS_Run();
+
+    //ASSERT
+    TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
+    
+    
+    TEST_ASSERT_EQUAL(1, task1_callCounter);
+    TEST_ASSERT_EQUAL(0, task2_callCounter);
+    TEST_ASSERT_EQUAL(1, task3_callCounter);
+    
+    TEST_ASSERT_EQUAL(3, TaskOrderTab[0]);
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[1]);
+
+}
+
+void test_TaskScheduler_run_multiple_tasks_properly_preemtied_three_tasks(void)
 {
         //ARRANGE
     TS_TimeStruct_t task1_currTimeInst = {0};
@@ -585,7 +642,7 @@ void test_TaskScheduler_run_multiple_tasks_properly_preemtied(void)
     TS_Run();
 
     HWTimestampRet.data.year = 24;
-    HWTimestampRet.data.day = 22;
+    HWTimestampRet.data.day = 20;
     HWTimestampRet.data.month = 9;
     HWTimestampRet.data.hour = 15;
     HWTimestampRet.data.minute = 18;
@@ -641,7 +698,7 @@ void test_TaskScheduler_run_multiple_tasks_properly_preemtied_same_priority(void
     TS_Run();
 
     HWTimestampRet.data.year = 24;
-    HWTimestampRet.data.day = 22;
+    HWTimestampRet.data.day = 20;
     HWTimestampRet.data.month = 9;
     HWTimestampRet.data.hour = 15;
     HWTimestampRet.data.minute = 18;
@@ -657,8 +714,8 @@ void test_TaskScheduler_run_multiple_tasks_properly_preemtied_same_priority(void
     TEST_ASSERT_EQUAL(1, task2_callCounter);
     TEST_ASSERT_EQUAL(1, task3_callCounter);
     
-    TEST_ASSERT_EQUAL(1, TaskOrderTab[0]);
-    TEST_ASSERT_EQUAL(3, TaskOrderTab[1]);
+    TEST_ASSERT_EQUAL(3, TaskOrderTab[0]);
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[1]);
     TEST_ASSERT_EQUAL(2, TaskOrderTab[2]);
 
 }
@@ -697,7 +754,7 @@ void test_TaskScheduler_run_multiple_tasks_properly_preemtied_same_priority_diff
     TS_Run();
 
     HWTimestampRet.data.year = 24;
-    HWTimestampRet.data.day = 22;
+    HWTimestampRet.data.day = 20;
     HWTimestampRet.data.month = 9;
     HWTimestampRet.data.hour = 15;
     HWTimestampRet.data.minute = 18;
@@ -777,12 +834,12 @@ void test_TaskScheduler_run_multiple_tasks_chained_tasks(void)
     TEST_ASSERT_EQUAL(1, task3_callCounter);
 
     TEST_ASSERT_EQUAL(1, TaskOrderTab[0]);
-    TEST_ASSERT_EQUAL(1, TaskOrderTab[1]);
-    TEST_ASSERT_EQUAL(2, TaskOrderTab[2]);
+    TEST_ASSERT_EQUAL(2, TaskOrderTab[1]);
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[2]);
     TEST_ASSERT_EQUAL(1, TaskOrderTab[3]);
-    TEST_ASSERT_EQUAL(1, TaskOrderTab[4]);
+    TEST_ASSERT_EQUAL(3, TaskOrderTab[4]);
     TEST_ASSERT_EQUAL(2, TaskOrderTab[5]);
-    TEST_ASSERT_EQUAL(3, TaskOrderTab[6]);
+    TEST_ASSERT_EQUAL(1, TaskOrderTab[6]);
 
 }
 

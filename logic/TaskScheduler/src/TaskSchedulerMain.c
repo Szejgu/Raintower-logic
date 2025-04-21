@@ -3,7 +3,7 @@
 
 #define TASK_INDEX_NOT_PLANNED 0xFFFFFFFFU
 #define MINIMUM_TIME_EXECUTION_MARGIN 5U
-#define MAX_NUMBER_OF_TASKS 10
+#define MAX_NUMBER_OF_TASKS 10 //TODO: check this in init
 #define MARGIN_FOR_IMMIDIATE_TASK_EXECUTION_MS 20
 
 static const TS_TimeStruct_t MaximumExecTimeInst = TASK_LIMIT_STRUCT;
@@ -25,11 +25,18 @@ static uint32_t index_of_task_to_execute_next = TASK_INDEX_NOT_PLANNED;
 static bool wakeup_from_RTC_IRQ = false;
 static bool moduleInitState = false;
 static bool TaskListNeedsUpdating = false;
+static bool taskOverdue = false;
+static uint32_t numOverdueTasks_local = 0;
+static uint32_t maxPreemptions = 0;
+static bool preemptionsUpdated = false;
+
 
 static void updateNextTaskIndex(void);
 static void updateTimeToNextInstAll(void);
 static void updateTimeToNextInst(uint32_t index);
 static bool isNextTaskImmidiate(void);
+static bool isTaskOverdue(uint32_t* numOverdueTasks);
+
 
 TS_InitErrorCodes_t TS_Init(TS_InitStruct_t* input)
 {
@@ -131,35 +138,73 @@ void TS_Run(void)
     4.1 jak trzeba odpalić kolejne to odpalić, wraz z zachowaniem task breakera
     4.2 w przypadku gdy nie trzeba to przejść dalej
     5. ustawić odpowiednie przerwanie od RTC
+
+
+    notatki dalej:
+
+    - planowanie kolejnych instancji zadania powinno dziać się względem czasu startu, nie zakończenia zadania
+    - kolejność w arbitrażu wywłaszczania to priorytet -> najkrótszy max.exec.time -> kolejność na liście
+    - w każdym innym przypadku o kolejności decyduje najbliższe zadanie
+    - wywłaszczenie występuje wtedy, kiedy początek zadania plus max.exec.time nachodzi na początek innego zadania
+    - w przypadku, gdy zaśpimy, zadania które miały się w tym czasie wykonać wykonują się raz
+    - w takim też przypadku następne instancje są planowane względem czasu wybudzenia
+
     */
-   if(!moduleInitState)
-   {
+    if(!moduleInitState)
+    {
         return;
-   }
-
-   updateCurrentTimeFromHW_local(&now);
-
-   if(TaskListNeedsUpdating)
-   {
-    updateTimeToNextInstAll();
-    TaskListNeedsUpdating = false;
-   }
-
-   updateNextTaskIndex();
-
-    if(isNextTaskImmidiate())
-    {
-
-        TaskListTab_local[index_of_task_to_execute_next].TaskFunPtr();
-        updateTimeToNextInst(index_of_task_to_execute_next);
-        setNextWakeup_local(TaskListTab_local[index_of_task_to_execute_next].TimeToNextInst);
-
-    }
-    else
-    {
-        setNextWakeup_local(TaskListTab_local[index_of_task_to_execute_next].TimeToNextInst);
     }
 
+    updateCurrentTimeFromHW_local(&now);
+
+    if(TaskListNeedsUpdating)
+    {
+        updateTimeToNextInstAll();
+        TaskListNeedsUpdating = false;
+    }
+
+    numOverdueTasks_local = 0;
+    maxPreemptions = 0;
+    preemptionsUpdated = false;
+    taskOverdue = isTaskOverdue(&numOverdueTasks_local);
+
+
+    
+    do{
+        updateNextTaskIndex();
+
+        if(isNextTaskImmidiate())
+        {
+
+            TaskListTab_local[index_of_task_to_execute_next].TaskFunPtr();
+            updateTimeToNextInst(index_of_task_to_execute_next);
+            setNextWakeup_local(TaskListTab_local[index_of_task_to_execute_next].TimeToNextInst);
+
+        }
+        else
+        {
+            setNextWakeup_local(TaskListTab_local[index_of_task_to_execute_next].TimeToNextInst);
+        }
+
+        if(0 < numOverdueTasks_local)
+        {
+            //updateCurrentTimeFromHW_local(&now);
+            numOverdueTasks_local--;
+        }
+        else
+        {
+            taskOverdue = false;
+        }
+
+        
+        if(maxPreemptions > 0)
+        {
+            maxPreemptions--;
+        }
+        
+
+    }
+    while(taskOverdue || maxPreemptions > 0);
 }
 
 TS_TimeStruct_t TS_PlanAbsolute(TS_TimeStruct_t date)
@@ -178,43 +223,39 @@ bool TS_DidTimeoutOccur(void)
 static void updateNextTaskIndex(void)
 {
     uint32_t nextTaskIndex_local = 0;
+    TS_TimeStruct_t closestNextTask = *TaskListTab_local[0].TimeToNextInst;
+    uint32_t timesPreemptied = 0;
 
     for(uint32_t i = 1; i < TaskListTab_size_local; i++)
     {
-        if(TaskListTab_local[nextTaskIndex_local].TimeToNextInst->raw > TaskListTab_local[i].TimeToNextInst->raw )
+        if(closestNextTask.raw > TaskListTab_local[i].TimeToNextInst->raw )
         {
+            closestNextTask = *TaskListTab_local[i].TimeToNextInst;
             nextTaskIndex_local = i;
-        }       
-    }
-
-    uint32_t numPreemptions = 0, preemptionTabIter = 0;
-    uint32_t preemptionTab[MAX_NUMBER_OF_TASKS] = {0};
-
-    TS_TimeStruct_t dateToCheckPreemptions = TimeStruct_add(*(TaskListTab_local[nextTaskIndex_local].TimeToNextInst), TaskListTab_local[nextTaskIndex_local].MaximumExecTime);
-
-    for(uint32_t i = 0; i < TaskListTab_size_local; i++)
-    {
-        if(i == nextTaskIndex_local)
-        {
-            continue;
         }
+    }
 
-        if(dateToCheckPreemptions.raw > TaskListTab_local[i].TimeToNextInst->raw )
+    for(uint32_t j = 0; j < TaskListTab_size_local; j++)
+    {
+        if(TaskListTab_local[j].Priority >= TaskListTab_local[nextTaskIndex_local].Priority )
         {
-            numPreemptions++;
-            preemptionTab[preemptionTabIter] = i;
-            preemptionTabIter++;
-        }       
+            if((TimeStruct_add(closestNextTask, TaskListTab_local[nextTaskIndex_local].MaximumExecTime)).raw >= TaskListTab_local[j].TimeToNextInst->raw)
+            {
+                nextTaskIndex_local = j;
+                closestNextTask = *TaskListTab_local[j].TimeToNextInst;
+                timesPreemptied++;
+            }
+        }
     }
 
-    if(0 == numPreemptions)
+
+    if(!preemptionsUpdated)
     {
-       index_of_task_to_execute_next = nextTaskIndex_local;
+        maxPreemptions = timesPreemptied + 1; //because of the nature of do-while loop
+        preemptionsUpdated = true;
     }
-    else
-    {
-        /* ogarnać wywłaszczenia, bo wiem ile ich jest i które to są*/
-    }
+
+    index_of_task_to_execute_next = nextTaskIndex_local;
 
 }
 
@@ -234,10 +275,6 @@ static bool isNextTaskImmidiate(void)
 
     TS_TimeStruct_t nowWithMargin = TimeStruct_add(now, margin);
 
-    //printf("now: %lld , margin %lld\r\n", now.raw, nextTaskWithMargin.raw);
-    //printf("NOW_TIME: h:%d, m:%d, s:%d, ms:%d\r\n", now.data.hour, now.data.minute, now.data.second, now.data.milisecond);
-    //printf("MARGIN_TIME: h:%d, m:%d, s:%d, ms:%d\r\n", nextTaskWithMargin.data.hour, nextTaskWithMargin.data.minute, nextTaskWithMargin.data.second, nextTaskWithMargin.data.milisecond);
-
     if(nowWithMargin.raw >= TaskListTab_local[index_of_task_to_execute_next].TimeToNextInst->raw)
     {
         ret = true;
@@ -249,4 +286,26 @@ static bool isNextTaskImmidiate(void)
 static void updateTimeToNextInst(uint32_t index)
 {
     *(TaskListTab_local[index].TimeToNextInst) = TimeStruct_add(now, TaskListTab_local[index].PlanNextInst());
+}
+
+static bool isTaskOverdue(uint32_t* numOverdueTasks)
+{
+    bool ret = false;
+
+    *numOverdueTasks = 0;
+
+    for(uint32_t i = 0; i < TaskListTab_size_local; i++)
+    {
+        if(TaskListTab_local[i].TimeToNextInst->raw < now.raw )
+        {
+            *numOverdueTasks+=1;
+        }
+    }
+
+    if(0 != numOverdueTasks)
+    {
+        ret = true;
+    }
+
+    return ret;
 }

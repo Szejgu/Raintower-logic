@@ -10,8 +10,10 @@ typedef enum{
 
     TS_Priority_low = 0x00,
     TS_Priority_normal = 0x01,
-    TS_Priority_high = 0x02
+    TS_Priority_high = 0x02,
+    TS_Priority_highest = 0x03,
 
+    TS_Priority_counter
 }TaskPriority_t;
 
 #define TASK_LIMIT_STRUCT { \
