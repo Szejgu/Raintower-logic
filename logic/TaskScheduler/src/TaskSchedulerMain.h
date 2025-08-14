@@ -97,6 +97,10 @@ void TS_Run(void);
  * @brief Helper function which translates the given time struct in such a way that the resulting struct is an absolute date
  * @remark Any other time struct given as a result of Plan Next is a relative representation of next occurence
  * @remark with this function it's possible to plan for specific minute/day/hour rather than planning after a given ammount of time
+ * @remark requires module to be initialised for it also requires the reading of current timestamp. If the module isn't initialised, the result is UINT64_MAX.
+ * @remark Only non zero fields of the input argument are taken into account. The result also depend on the current time.
+ * @param date time struct describing an absoulte date (e.g. 8 am, 20th of current month, January 3rd etc.)
+ * @return time struct that is relative to current moment. 
  */
 TS_TimeStruct_t TS_PlanAbsolute(TS_TimeStruct_t date);
 

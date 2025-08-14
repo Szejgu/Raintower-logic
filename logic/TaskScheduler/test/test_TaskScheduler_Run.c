@@ -1,4 +1,4 @@
-//#ifdef TEST
+#ifdef TEST
 
 #include "unity.h"
 
@@ -836,4 +836,4 @@ static TS_TimeStruct_t dummy_task3_planNext(void)
 {
     return task3_planNextRetVal;
 }
-//#endif // TEST
+#endif // TEST
