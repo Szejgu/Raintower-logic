@@ -210,8 +210,19 @@ void TS_Run(void)
 TS_TimeStruct_t TS_PlanAbsolute(TS_TimeStruct_t date)
 {
     TS_TimeStruct_t ret = {0};
-    (void)date;
 
+    if(!moduleInitState)
+    {
+        ret.raw = UINT64_MAX;
+        return ret;
+    }
+    
+    updateCurrentTimeFromHW_local(&now);
+
+    
+
+    (void)date;
+ 
     return ret;
 }
 

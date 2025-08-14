@@ -1,6 +1,10 @@
 #ifndef TIMESTRUCTCALC_H_
 #define TIMESTRUCTCALC_H_
 
+/***
+ * Oprations in this module, are based on algorithms described here https://homepage.cs.uiowa.edu/~dwjones/bcd/bcd.html
+ */
+
 #include "TS_TimeStruct_t.h"
 
 TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time);
