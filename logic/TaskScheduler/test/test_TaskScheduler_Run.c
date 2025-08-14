@@ -3,46 +3,13 @@
 #include "unity.h"
 
 #include "TaskSchedulerMain.h"
+#include "TaskScheduler_goodInit.h"
 #include "TS_TimeStruct_t.h"
 #include "TimeStructCalc.h"
 #include <string.h>
 
-#define TASK_LIST_LENGTH 3
+
 #define TASK_ORDER_TAB_LENGTH 10
-
-#define DUMMY_TASK_MAX_EXEC_TIME { \
-    .data = {\
-        .year = 0, \
-        .month = 0, \
-        .day = 0, \
-        .hour = 0, \
-        .minute = 0, \
-        .second = 1, \
-        .milisecond = 0 \
-    }\
-}
-
-#define DUMMY_TASK_MAX_EXEC_TIME2 { \
-    .data = {\
-        .year = 0, \
-        .month = 0, \
-        .day = 0, \
-        .hour = 0, \
-        .minute = 0, \
-        .second = 0, \
-        .milisecond = 900 \
-    }\
-}
-
-
-static void dummy_fun(void);
-static TS_TimeStruct_t dummy_planNext(void);
-static void dummy_getHWTimestamp(TS_TimeStruct_t* input);
-static bool b_dummy_const_TS_TimeStruct_t(const TS_TimeStruct_t* input);
-static bool dummy_setNextAlarm(const TS_TimeStruct_t* input);
-static bool dummy_setNextTaskBreaker(const TS_TimeStruct_t* input);
-static bool dummy_resetTaskbreaker(void);
-static TS_InitStruct_t goodInit(void);
 
 static void dummy_task1(void);
 static TS_TimeStruct_t dummy_task1_planNext(void);
@@ -53,25 +20,17 @@ static TS_TimeStruct_t dummy_task2_planNext(void);
 static void dummy_task3(void);
 static TS_TimeStruct_t dummy_task3_planNext(void);
 
-static TS_TimeStruct_t HWTimestampRet = {0};
-static uint32_t HWTimestampGetCallCounter = 0;
+
 static uint32_t task1_callCounter = 0;
 static uint32_t task2_callCounter = 0;
 static uint32_t task3_callCounter = 0;
 static TS_TimeStruct_t task1_planNextRetVal = {0};
 static TS_TimeStruct_t task2_planNextRetVal = {0};
 static TS_TimeStruct_t task3_planNextRetVal = {0};
-static TS_TimeStruct_t alarmSetValue = {0}; 
+
 static uint32_t TaskOrderTab[TASK_ORDER_TAB_LENGTH];
 static uint32_t TaskOrderTab_index = 0;
 
-static TS_TimeStruct_t SamplecurrTimeTabInst[TASK_LIST_LENGTH] = {0};
-TaskDescriptor_t SampleTaskList[TASK_LIST_LENGTH] = {
-        {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &SamplecurrTimeTabInst[0]},
-        {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &SamplecurrTimeTabInst[1]},
-        {dummy_fun, dummy_planNext, TS_Priority_normal,DUMMY_TASK_MAX_EXEC_TIME, &SamplecurrTimeTabInst[2]}
-    };
-size_t SampleTaskListTab_size = TASK_LIST_LENGTH;
 
 void setUp(void)
 {
@@ -841,61 +800,6 @@ void test_TaskScheduler_run_multiple_tasks_chained_tasks(void)
     TEST_ASSERT_EQUAL(2, TaskOrderTab[5]);
     TEST_ASSERT_EQUAL(1, TaskOrderTab[6]);
 
-}
-
-static TS_InitStruct_t goodInit(void)
-{
-    TS_InitStruct_t ret = {0};
-
-    ret.TaskListTab = SampleTaskList;
-    ret.TaskListTab_size = SampleTaskListTab_size;
-    ret.updateCurrentTimeFromHW = dummy_getHWTimestamp;
-    ret.setCurrentTimeInHW = b_dummy_const_TS_TimeStruct_t;
-    ret.setNextWakeup = dummy_setNextAlarm;
-    ret.setOrRestartTaskBreaker = dummy_setNextTaskBreaker;
-    ret.resetTaskBreaker = dummy_resetTaskbreaker;
-
-    return ret;
-}
-
-static void dummy_fun(void)
-{
-
-}
-
-static TS_TimeStruct_t dummy_planNext(void)
-{
-    TS_TimeStruct_t ret = {0};
-    return ret;
-}
-
-static void dummy_getHWTimestamp(TS_TimeStruct_t* input)
-{
-    HWTimestampGetCallCounter++;
-    memcpy(input, &HWTimestampRet, sizeof(TS_TimeStruct_t));
-}
-
-static bool b_dummy_const_TS_TimeStruct_t(const TS_TimeStruct_t* input)
-{
-    (void)input;
-    return true;
-}
-
-static bool dummy_resetTaskbreaker(void)
-{
-    return true;
-}
-
-static bool dummy_setNextAlarm(const TS_TimeStruct_t* input)
-{
-    memcpy(&alarmSetValue, input, sizeof(TS_TimeStruct_t));
-    return true;
-}
-
-static bool dummy_setNextTaskBreaker(const TS_TimeStruct_t* input)
-{
-    (void)input;
-    return true;
 }
 
 static void dummy_task1(void)

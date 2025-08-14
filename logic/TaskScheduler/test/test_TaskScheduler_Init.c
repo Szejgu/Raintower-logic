@@ -5,37 +5,8 @@
 #include "TaskSchedulerMain.h"
 #include "TimeStructCalc.h"
 #include "TS_TimeStruct_t.h"
+#include "TaskScheduler_goodInit.h"
 
-#define TASK_LIST_LENGTH 3
-#define DUMMY_TASK_MAX_EXEC_TIME { \
-    .data = { \
-        .year = 0, \
-        .month = 0, \
-        .day = 0, \
-        .hour = 0, \
-        .minute = 0, \
-        .second = 1, \
-        .milisecond = 0 \
-        }\
-}
-
-#define TASK_MAX_EXEC_TIME_ALL_ZERO {\
-    .data = { \
-        .year = 0, \
-        .month = 0, \
-        .day = 0, \
-        .hour = 0, \
-        .minute = 0, \
-        .second = 0, \
-        .milisecond = 0 \
-        }\
-}
-
-static void dummy_fun(void);
-static TS_TimeStruct_t dummy_planNext(void);
-static void v_dummy_TS_TimeStruct_t(TS_TimeStruct_t* input);
-static bool b_dummy_const_TS_TimeStruct_t(const TS_TimeStruct_t* input);
-static bool b_dummy_v(void);
 
 void setUp(void)
 {
@@ -278,31 +249,5 @@ void test_TaskScheduler_Init_happy_path(void)
     TEST_ASSERT_EQUAL(TS_InitErrorCodes_noError, result);
 }
 
-static void dummy_fun(void)
-{
-
-}
-
-static TS_TimeStruct_t dummy_planNext(void)
-{
-    TS_TimeStruct_t ret = {0};
-    return ret;
-}
-
-static void v_dummy_TS_TimeStruct_t(TS_TimeStruct_t* input)
-{
-    (void)input;
-}
-
-static bool b_dummy_const_TS_TimeStruct_t(const TS_TimeStruct_t* input)
-{
-    (void)input;
-    return true;
-}
-
-static bool b_dummy_v(void)
-{
-    return true;
-}
 
 #endif // TEST

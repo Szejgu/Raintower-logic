@@ -92,14 +92,6 @@ void TS_UpdateWakeupStatus(bool status);
  */
 void TS_Run(void);
 
-/**
- * tutaj rozważyć czy czasem nie trzeba jeszcze jednej funkcji, która będzie wywyoływana przy inicie, dla "pierwszego" przeliczenia tablicy bez wywoływania zadania
- * tak żeby mieć warunek początkowy.
- * bo tobez sensu żeby tak dużo funkcjonalności zawierać w jedną funkcją
- * nawet jeśli przyjmniemy że mamy niezliczoną ilość funkcji pomocniczych
- * to powinno być bardziej transparentne
- * ale z drugiej strony powinno też być odporne na błędy
- */
 
 /**
  * @brief Helper function which translates the given time struct in such a way that the resulting struct is an absolute date
