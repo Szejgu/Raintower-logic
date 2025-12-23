@@ -1,0 +1,346 @@
+#include <stdio.h>
+#include <stdint.h>
+#include <stdbool.h>
+
+#define INCORRECT_NUM_DAYS 0xFF
+
+#define MONTH_SHORT_MASK 0x00001C1A12041018
+#define MONTH_LONG_MASK 0x00001C1A02041018
+#define MONTH_FEB_LEAP 0x00001C1A22041018
+#define MONHT_FEB_COMMON 0x00001C1A32041018
+
+#define SMONL_TEST_LONG 0x00006808
+#define SMONL_TEST_SHORT 0x00006848
+#define SMONL_TEST_LEAP 0x00006888
+#define SMONL_TEST_COMM 0x000068C8
+
+#define MONTH_LONG_MAX_VALUES 0x00006361F63CF3E8
+
+static const uint8_t days_in_common_year[13] = {INCORRECT_NUM_DAYS, 31, 28, 31, 30, 31, 31, 30, 31, 30, 31, 30, 31};
+static const uint8_t days_in_leap_year[13] = {INCORRECT_NUM_DAYS, 31, 29, 31, 30, 31, 31, 30, 31, 30, 31, 30, 31};
+
+
+
+typedef struct{
+
+    uint32_t hour : 5;
+    uint32_t hour_overflow : 1;
+    uint32_t day : 6;
+    uint32_t day_overflow : 1;
+    uint32_t month : 4;
+    uint32_t unused : 16;
+
+}smonl_test_t;
+
+typedef union{
+    uint32_t raw;
+    smonl_test_t data;
+}smonl_union_u;
+
+typedef enum{
+
+    Month_short = 0x01,
+    Month_long = 0x02,
+    Month_febuary_leap = 0x03,
+    Month_febuary_common = 0x04,
+
+    Month_incorrect_mask = 0xFF
+
+}Month_mask_t;
+
+
+// nie po bozemu!!!!! unu
+typedef struct __attribute__((packed)){
+
+    uint64_t milisecond : 10;
+    uint64_t second : 6;
+    uint64_t minute : 6;
+    uint64_t hour : 5;
+    uint64_t hour_overflow : 1;
+    uint64_t day : 6;
+    uint64_t day_overflow : 1;
+    uint64_t month : 4;
+    uint64_t month_overflow : 1;
+    uint64_t year : 7;
+    uint64_t unused : 17;
+
+
+}big_test_t;
+
+typedef union{
+
+    big_test_t data;
+    uint64_t raw;
+
+}test_big_union_t;
+
+//_Static_assert(__STDC_VERSION__ == 202311L, "Wrong C standard, use C23");
+
+
+
+
+static bool isLeapYear(uint8_t yearsSince2000);
+
+static test_big_union_t TimeStruct_add(test_big_union_t base, test_big_union_t time);
+static test_big_union_t TimeStruct_subtract(test_big_union_t base, test_big_union_t time);
+static uint64_t add_time_struct(uint64_t* a, uint64_t* b, Month_mask_t mask_select);
+
+static uint32_t przyklad_add_10(uint32_t num);
+static uint32_t przyklad_add(uint32_t num1, uint32_t num2);
+
+int main()
+{
+
+/*
+    test_big_union_t a = {.data = {.year = 0, .month = 1, .day = 31, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
+    test_big_union_t b = {.data = {.year = 0, .month = 1, .day = 0, .hour = 10, .minute = 10, .second = 10, .milisecond = 100}};
+    test_big_union_t big_result = {0};
+
+    big_result = TimeStruct_add(a, b);
+
+    printf("year: %d, month: %d, day: %d, hour: %d,\r\nminute: %d, second: %d, milisecond: %d\r\n overflow month: %d, overflow day: %d, overflow hour: %d \r\n",
+    big_result.data.year, big_result.data.month, big_result.data.day,
+    big_result.data.hour,big_result.data.minute,big_result.data.second, big_result.data.milisecond,
+    big_result.data.month_overflow,big_result.data.day_overflow, big_result.data.hour_overflow);
+*/
+    test_big_union_t d = {.data = {.year = 97, .month = 2, .day = 28, .hour = 0, .minute = 0, .second = 0, .milisecond = 0}};
+    test_big_union_t e = {.data = {.year = 3, .month = 2, .day = 28, .hour = 0, .minute = 0, .second = 0, .milisecond = 0}};
+    test_big_union_t sub_result = {0};
+    //test_big_union_t add_result = {0};   
+
+    sub_result = TimeStruct_subtract(d,e);
+    //add_result = TimeStruct_add(d, e);
+
+    printf("----------------------------------------------------------\r\n");
+    printf("year: %d, month: %d, day: %d, hour: %d,\r\nminute: %d, second: %d, milisecond: %d\r\n overflow month: %d, overflow day: %d, overflow hour: %d \r\n",
+    sub_result.data.year, sub_result.data.month, sub_result.data.day,
+    sub_result.data.hour,sub_result.data.minute,sub_result.data.second, sub_result.data.milisecond,
+    sub_result.data.month_overflow,sub_result.data.day_overflow, sub_result.data.hour_overflow);
+
+    //printf("year: %d, month: %d, day: %d, hour: %d,\r\nminute: %d, second: %d, milisecond: %d\r\n overflow month: %d, overflow day: %d, overflow hour: %d \r\n",
+    //add_result.data.year, add_result.data.month, add_result.data.day,
+    //add_result.data.hour,add_result.data.minute,add_result.data.second, add_result.data.milisecond,
+    //add_result.data.month_overflow,add_result.data.day_overflow, add_result.data.hour_overflow);
+
+/*
+    uint32_t a = 0x09030000;
+
+    uint32_t b = 0x00000000;
+
+    printf("%x %x %x \r\n", przyklad_add(a,b), przyklad_add_10(b), przyklad_add(a,przyklad_add_10(b)));
+
+    return 0;
+*/
+}
+
+
+test_big_union_t TimeStruct_subtract(test_big_union_t base, test_big_union_t time)
+{
+    test_big_union_t t1 = {0};
+    t1.raw = 0xFFFFE361F5FBEFE7 - time.raw;
+
+    printf("-------------------------pierwsze odejmowanie -------------------\r\n");
+    printf("raw 1: %llx\r\n",t1.raw);
+    printf("year: %d, month: %d, day: %d, hour: %d,\r\nminute: %d, second: %d, milisecond: %d\r\n overflow month: %d, overflow day: %d, overflow hour: %d \r\n",
+    t1.data.year, t1.data.month, t1.data.day,
+    t1.data.hour,t1.data.minute,t1.data.second, t1.data.milisecond,
+    t1.data.month_overflow,t1.data.day_overflow, t1.data.hour_overflow);
+
+    test_big_union_t t2 = {0};
+    test_big_union_t t3 = {0};
+    t3.raw = 0x8408000001;
+    t2.raw = add_time_struct(&t1.raw, &t3.raw, Month_long);
+
+    printf("------------------------po dodaniu magicznych jedynek----------------------\r\n");
+    printf("raw 2: %llx\r\n",t2.raw);
+    printf("year: %d, month: %d, day: %d, hour: %d,\r\nminute: %d, second: %d, milisecond: %d\r\n overflow month: %d, overflow day: %d, overflow hour: %d \r\n",
+    t2.data.year, t2.data.month, t2.data.day,
+    t2.data.hour,t2.data.minute,t2.data.second, t2.data.milisecond,
+    t2.data.month_overflow,t2.data.day_overflow, t2.data.hour_overflow);
+
+
+    test_big_union_t t4 = {0};
+    t4.raw = add_time_struct(&base.raw, &t2.raw, Month_long);
+
+    return t4;
+}
+
+test_big_union_t TimeStruct_add(test_big_union_t base, test_big_union_t time)
+{
+    test_big_union_t ret = {0};
+    Month_mask_t mask = Month_incorrect_mask;
+
+    switch(base.data.month)
+    {
+        case 1:
+        case 3:
+        case 5:
+        case 7:
+        case 8:
+        case 10:
+        case 12:
+            mask = Month_long;
+        break;
+
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+            mask = Month_short;
+        break;
+
+        case 2:
+            if(isLeapYear(base.data.year))
+            {
+                mask = Month_febuary_leap;
+            }
+            else
+            {
+                mask = Month_febuary_common;
+            }
+        break;
+
+        default:
+        break;
+    }
+    
+    ret.raw = add_time_struct(&base.raw, &time.raw, mask);
+
+    if(ret.data.hour_overflow > 0)
+    {
+        ret.data.day += 1;
+    }
+
+    if(ret.data.day_overflow > 0)
+    {
+        ret.data.month += 1;
+        ret.data.day += 1;
+    }
+
+    if(ret.data.month_overflow > 0)
+    {
+        ret.data.month += 1;
+        ret.data.year += 1;
+    }
+
+    if(ret.data.day == 0)
+    {
+        ret.data.day = 1;
+    }
+
+    if(ret.data.month == 0)
+    {
+        ret.data.month = 1;
+    }
+
+    bool isLeap = isLeapYear(ret.data.year);
+
+    if(isLeap)
+    {
+        if(ret.data.day > days_in_leap_year[ret.data.month])
+        {
+            ret.data.day = days_in_leap_year[ret.data.month];
+        }
+    }
+    else
+    {
+        if(ret.data.day > days_in_common_year[ret.data.month])
+        {
+            ret.data.day = days_in_common_year[ret.data.month];
+        }
+    }
+
+    return ret;
+}
+
+static bool isLeapYear(uint8_t yearsSince2000)
+{
+    return (0 == (yearsSince2000 % 4)) ? true : false;
+}
+
+static uint64_t add_time_struct(uint64_t* a, uint64_t* b, Month_mask_t mask_select)
+{
+    uint64_t limits = 0;
+    uint64_t t15 = 0;
+
+    switch(mask_select)
+    {
+        case Month_short:
+            limits = MONTH_SHORT_MASK;
+        break;
+        
+        case Month_febuary_common:
+            limits = MONHT_FEB_COMMON;
+        break;
+
+        case Month_febuary_leap:
+            limits = MONTH_FEB_LEAP;
+        break;
+
+        case Month_long:
+        default:
+            limits = MONTH_LONG_MASK;
+        break;
+    }
+
+    uint64_t t1 = *a + limits;
+    uint64_t t2 = t1 + *b;
+    uint64_t t3 = ~(t1 ^ *b ^ t2);
+    
+    uint64_t t4 = t3 & 0x0000000000000400;
+    uint64_t t5 = t3 & 0x0000000000010000;
+    uint64_t t6 = t3 & 0x0000000000400000;
+    uint64_t t7 = t3 & 0x0000000008000000;
+    uint64_t t8 = t3 & 0x0000000400000000;
+    uint64_t t9 = t3 & 0x0000008000000000;
+    uint64_t t10 = t3 & 0x0000800000000000;
+    
+    uint64_t t11 = (t4 >> 6) | (t4 >> 7);
+    uint64_t t12 = (t5 >> 4);
+    uint64_t t13 = (t6 >> 4);
+    uint64_t t14 = (t7 >> 2);
+        switch(mask_select)
+    {
+        case Month_short:
+            t15 = (t8 >> 1) | (t8 >> 6);
+        break;
+        
+        case Month_febuary_common:
+            t15 = (t8 >> 1) | (t8 >> 5) | (t8 >> 6);
+        break;
+
+        case Month_febuary_leap:
+            t15 = (t8 >> 1) | (t8 >> 5);
+        break;
+
+        case Month_long:
+        default:
+            t15 = (t8 >> 1);
+        break;
+    }
+    uint64_t t16 = (t9 >> 3) | (t9 >> 4);
+    uint64_t t17 = (t10 >> 3) | (t10 >> 4) | (t10 >> 5);
+
+    return t2 - (t11 | t12 | t13 | t14 | t15 | t16 | t17);
+
+}
+
+static uint32_t przyklad_add_10(uint32_t num)
+{
+    uint32_t t1 = 0xF9999099 - num;
+    return przyklad_add( t1, 0x00000001 );
+}
+
+static uint32_t przyklad_add(uint32_t num1, uint32_t num2)
+{
+
+    uint32_t t1 = num1 + 0x06666F66;
+    uint32_t t2 = t1 + num2;
+    uint32_t t3 = t1 ^ num2;
+    uint32_t t4 = t2 ^ t3;
+    uint32_t t5 = ~t4 & 0x11110110;
+    uint32_t t6 = ~t4 & 0x00001000;
+    uint32_t t7 = (t5 >> 2) | (t5 >> 3);
+    uint32_t t8 = (t6 >> 1) | (t6 >> 2) | (t6 >> 3) | (t6 >> 4);
+    return t2 - (t7 | t8);
+}
