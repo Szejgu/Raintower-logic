@@ -120,6 +120,13 @@ TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time)
     return ret;
 }
 
+TS_TimeStruct_t TimeStruct_subtract(TS_TimeStruct_t base, TS_TimeStruct_t time)
+{
+    TS_TimeStruct_t ret = {0};
+    
+    return ret;
+}
+
 static uint64_t add_time_struct(uint64_t* a, uint64_t* b, Month_mask_t mask_select)
 {
     uint64_t limits = 0;

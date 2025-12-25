@@ -9,4 +9,6 @@
 
 TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time);
 
+TS_TimeStruct_t TimeStruct_subtract(TS_TimeStruct_t base, TS_TimeStruct_t time);
+
 #endif
