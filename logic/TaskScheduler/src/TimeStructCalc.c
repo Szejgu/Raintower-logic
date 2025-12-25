@@ -31,6 +31,7 @@ TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time)
 {
     TS_TimeStruct_t ret = {0};
     Month_mask_t mask = Month_incorrect_mask;
+    bool isBaseLeap = isLeapYear(base.data.year);
 
     switch(base.data.month)
     {
@@ -52,7 +53,7 @@ TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time)
         break;
 
         case 2:
-            if(isLeapYear(base.data.year))
+            if(isBaseLeap)
             {
                 mask = Month_febuary_leap;
             }
@@ -72,12 +73,48 @@ TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time)
     if(ret.data.hour_overflow > 0)
     {
         ret.data.day += 1;
+        if(isBaseLeap)
+        {
+            if(ret.data.day > days_in_leap_year[ret.data.month])
+            {
+                ret.data.day = 0;
+                ret.data.day_overflow = 1;
+            }
+        }
+        else
+        {
+            if(ret.data.day > days_in_common_year[ret.data.month])
+            {
+                ret.data.day = 0;
+                ret.data.day_overflow = 1;
+            }
+        }
+        
     }
+
+
 
     if(ret.data.day_overflow > 0)
     {
         ret.data.month += 1;
         ret.data.day += 1;
+        if(isBaseLeap)
+        {
+            if(ret.data.month > 12)
+            {
+                ret.data.month = 0;
+                ret.data.month_overflow = 1;
+            }
+        }
+        else
+        {
+            if(ret.data.month > 12)
+            {
+                ret.data.month = 0;
+                ret.data.month_overflow = 1;
+            }
+        }
+        
     }
 
     if(ret.data.month_overflow > 0)
@@ -96,9 +133,9 @@ TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time)
         ret.data.month = 1;
     }
 
-    bool isLeap = isLeapYear(ret.data.year);
+    bool isRetLeap = isLeapYear(ret.data.year);
 
-    if(isLeap)
+    if(isRetLeap)
     {
         if(ret.data.day > days_in_leap_year[ret.data.month])
         {
@@ -123,7 +160,7 @@ TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time)
 TS_TimeStruct_t TimeStruct_subtract(TS_TimeStruct_t base, TS_TimeStruct_t time)
 {
     TS_TimeStruct_t ret = {0};
-    
+
     return ret;
 }
 
