@@ -6,6 +6,13 @@
 #define MONTH_FEB_LEAP 0x00001C1A22041018
 #define MONHT_FEB_COMMON 0x00001C1A32041018
 
+#define MONTH_LONG_COMPLEMENT 0xFFFFE361F5FBEFE7
+#define MONTH_SHORT_COMPLEMENT 0xFFFFE361E5FBEFE7
+#define MONTH_FEB_LEAP_COMPLEMENT 0xFFFFE361D5FBEFE7
+#define MONTH_FEB_COMMON_COMPLEMENT 0xFFFFE361C5FBEFE7
+
+#define OVERFLOW_HANDLING_ONES 0x8408000001
+
 #define INCORRECT_NUM_DAYS 0xFF
 
 static const uint8_t days_in_common_year[13] = {INCORRECT_NUM_DAYS, 31, 28, 31, 30, 31, 31, 30, 31, 30, 31, 30, 31};
@@ -160,6 +167,138 @@ TS_TimeStruct_t TimeStruct_add(TS_TimeStruct_t base, TS_TimeStruct_t time)
 TS_TimeStruct_t TimeStruct_subtract(TS_TimeStruct_t base, TS_TimeStruct_t time)
 {
     TS_TimeStruct_t ret = {0};
+    Month_mask_t mask = Month_incorrect_mask;
+    bool isBaseLeap = isLeapYear(base.data.year);
+    TS_TimeStruct_t t1 = {0}, t2 = {0}, t3 = {0};
+
+    switch(base.data.month)
+    {
+        case 1:
+        case 3:
+        case 5:
+        case 7:
+        case 8:
+        case 10:
+        case 12:
+            mask = Month_long;
+            t1.raw = MONTH_LONG_COMPLEMENT - time.raw;
+        break;
+
+        case 4:
+        case 6:
+        case 9:
+        case 11:
+            mask = Month_short;
+            t1.raw = MONTH_SHORT_COMPLEMENT - time.raw;
+        break;
+
+        case 2:
+            if(isBaseLeap)
+            {
+                mask = Month_febuary_leap;
+                t1.raw = MONTH_FEB_LEAP_COMPLEMENT - time.raw;
+            }
+            else
+            {
+                mask = Month_febuary_common;
+                t1.raw = MONTH_FEB_COMMON_COMPLEMENT - time.raw;
+            }
+        break;
+
+        default:
+            mask = Month_incorrect_mask;
+        break;
+    }
+
+    t2.raw = OVERFLOW_HANDLING_ONES;
+
+    t3.raw = add_time_struct(&t1.raw, &t2.raw, mask);
+
+    ret.raw = add_time_struct(&base.raw, &t3.raw, mask);
+
+        if(ret.data.hour_overflow > 0)
+    {
+        ret.data.day += 1;
+        if(isBaseLeap)
+        {
+            if(ret.data.day > days_in_leap_year[ret.data.month])
+            {
+                ret.data.day = 0;
+                ret.data.day_overflow = 1;
+            }
+        }
+        else
+        {
+            if(ret.data.day > days_in_common_year[ret.data.month])
+            {
+                ret.data.day = 0;
+                ret.data.day_overflow = 1;
+            }
+        }
+        
+    }
+
+
+
+    if(ret.data.day_overflow > 0)
+    {
+        ret.data.month += 1;
+        ret.data.day += 1;
+        if(isBaseLeap)
+        {
+            if(ret.data.month > 12)
+            {
+                ret.data.month = 0;
+                ret.data.month_overflow = 1;
+            }
+        }
+        else
+        {
+            if(ret.data.month > 12)
+            {
+                ret.data.month = 0;
+                ret.data.month_overflow = 1;
+            }
+        }
+        
+    }
+
+    if(ret.data.month_overflow > 0)
+    {
+        ret.data.month += 1;
+        ret.data.year += 1;
+    }
+
+    if(ret.data.day == 0)
+    {
+        ret.data.day = 1;
+    }
+
+    if(ret.data.month == 0)
+    {
+        ret.data.month = 1;
+    }
+
+    bool isRetLeap = isLeapYear(ret.data.year);
+
+    if(isRetLeap)
+    {
+        if(ret.data.day > days_in_leap_year[ret.data.month])
+        {
+            ret.data.day = days_in_leap_year[ret.data.month];
+        }
+    }
+    else
+    {
+        if(ret.data.day > days_in_common_year[ret.data.month])
+        {
+            ret.data.day = days_in_common_year[ret.data.month];
+        }
+    }
+
+    ret.data.day_overflow = 0;
+    ret.data.hour_overflow = 0;
+    ret.data.month_overflow = 0;
 
     return ret;
 }
