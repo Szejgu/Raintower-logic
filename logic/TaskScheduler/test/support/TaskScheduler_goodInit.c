@@ -1,4 +1,5 @@
 #include "TaskScheduler_goodInit.h"
+#include <string.h>
 
 
 uint32_t HWTimestampGetCallCounter = 0;

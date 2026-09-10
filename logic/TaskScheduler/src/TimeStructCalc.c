@@ -216,90 +216,37 @@ TS_TimeStruct_t TimeStruct_subtract(TS_TimeStruct_t base, TS_TimeStruct_t time)
 
     ret.raw = add_time_struct(&base.raw, &t3.raw, mask);
 
-        if(ret.data.hour_overflow > 0)
+    if(0 == ret.data.month)
     {
-        ret.data.day += 1;
-        if(isBaseLeap)
-        {
-            if(ret.data.day > days_in_leap_year[ret.data.month])
-            {
-                ret.data.day = 0;
-                ret.data.day_overflow = 1;
-            }
-        }
-        else
-        {
-            if(ret.data.day > days_in_common_year[ret.data.month])
-            {
-                ret.data.day = 0;
-                ret.data.day_overflow = 1;
-            }
-        }
-        
+        ret.data.year -= 1;
+        ret.data.month = 12;        
     }
-
-
-
-    if(ret.data.day_overflow > 0)
+    if(0 == ret.data.day || (1 == ret.data.month_overflow))
     {
-        ret.data.month += 1;
-        ret.data.day += 1;
-        if(isBaseLeap)
-        {
-            if(ret.data.month > 12)
-            {
-                ret.data.month = 0;
-                ret.data.month_overflow = 1;
-            }
-        }
-        else
-        {
-            if(ret.data.month > 12)
-            {
-                ret.data.month = 0;
-                ret.data.month_overflow = 1;
-            }
-        }
-        
-    }
-
-    if(ret.data.month_overflow > 0)
-    {
-        ret.data.month += 1;
-        ret.data.year += 1;
-    }
-
-    if(ret.data.day == 0)
-    {
-        ret.data.day = 1;
-    }
-
-    if(ret.data.month == 0)
-    {
-        ret.data.month = 1;
+        ret.data.month -= 1;        
     }
 
     bool isRetLeap = isLeapYear(ret.data.year);
 
     if(isRetLeap)
     {
-        if(ret.data.day > days_in_leap_year[ret.data.month])
+        if((ret.data.day > days_in_leap_year[ret.data.month]) || (0 == ret.data.day))
         {
             ret.data.day = days_in_leap_year[ret.data.month];
         }
     }
     else
     {
-        if(ret.data.day > days_in_common_year[ret.data.month])
+        if((ret.data.day > days_in_common_year[ret.data.month]) || (0 == ret.data.day))
         {
             ret.data.day = days_in_common_year[ret.data.month];
         }
     }
-
+    
     ret.data.day_overflow = 0;
     ret.data.hour_overflow = 0;
     ret.data.month_overflow = 0;
-
+    
     return ret;
 }
 
